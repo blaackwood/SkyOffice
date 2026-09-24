@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mapear assentos — SkyOffice</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #10141c; color: #edf2fb; font: 14px system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; }
+    #bar { min-height: 56px; height: auto; flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 7px 10px; background: #1a202b; border-bottom: 1px solid #303848; }
+    #bar strong { margin-right: 5px; white-space: nowrap; }
+    button, label { flex: 0 0 auto; white-space: nowrap; border: 1px solid #384254; background: #242c39; color: #edf2fb; border-radius: 7px; padding: 7px 10px; cursor: pointer; }
+    button.active { background: #195e50; border-color: #56c9a6; }
+    button:hover { filter: brightness(1.15); }
+    #hint { color: #aeb9ca; margin-left: auto; white-space: nowrap; }
+    #stage { flex: 1; min-height: 0; width: 100%; height: auto; cursor: crosshair; }
+    #status { position: fixed; left: 14px; bottom: 12px; background: #151b25e8; border: 1px solid #303848; padding: 7px 10px; border-radius: 7px; color: #c7d0de; pointer-events: none; }
+    #toggle { display: flex; align-items: center; gap: 6px; }
+    #toggle input { accent-color: #57d6aa; }
+    @media (max-width: 1100px) {
+      #bar { min-height:56px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:7px; gap:5px; }
+      #bar strong { grid-column:1 / -1; }
+      #bar button, #toggle { min-width:0; padding:6px 4px; text-align:center; justify-content:center; }
+      #hint { display:none; }
+      #stage { height:auto; }
+    }
+  </style>
+</head>
+<body>
+  <div id="bar">
+    <strong>Mapear lugares para sentar</strong>
+    <button data-dir="up">↑ De costas</button>
+    <button data-dir="down" class="active">↓ De frente</button>
+    <button data-dir="left">← Esquerda</button>
+    <button data-dir="right">→ Direita</button>
+    <button id="remove">Apagar selecionado</button>
+    <button id="shiftXMinus">Avatar X −</button><button id="shiftXPlus">Avatar X +</button>
+    <button id="shiftYMinus">Avatar Y −</button><button id="shiftYPlus">Avatar Y +</button>
+    <label>Tipo <select id="seatGroup"><option value="" selected>Escolha o tipo…</option><option value="chair">Cadeira normal</option><option value="office-chair">Cadeira de escritório</option><option value="pouf">Puff</option><option value="sofa">Sofá</option></select></label>
+    <button id="setGroup">Definir tipo nos selecionados</button><button id="clearGroup">Limpar tipo</button><button id="applyTemplate">Copiar ajuste para tipo + direção</button>
+    <button id="undo">Desfazer</button><button id="redo">Refazer</button>
+    <button id="zoomIn">Zoom +</button><button id="zoomOut">Zoom −</button><button id="focusSeat">Enquadrar assento</button><button id="resetZoom">Ver mapa todo</button>
+    <button id="hideBrush">Ocultar pixels</button><button id="showBrush">Mostrar pixels</button>
+    <label>Espessura <input id="brushSize" type="range" min="1" max="16" value="8" /><span id="brushValue">8 px</span></label>
+    <button id="saveMap">Baixar seat-map.json</button>
+    <button id="saveCollision">Baixar map-collision.json</button>
+    <label id="toggle"><input id="existing" type="checkbox" checked /> mostrar atuais</label>
+    <label id="previewToggle"><input id="preview" type="checkbox" checked /> prévia do avatar</label>
+    <label><input id="showGroups" type="checkbox" /> mostrar tipos (C/E/P/S)</label>
+    <label id="collisionToggle"><input id="collisionMode" type="checkbox" /> editar colisão</label>
+    <span id="hint">Os tipos já vêm marcados: C cadeira · E escritório · P puff · S sofá. Ative “mostrar tipos” para conferir.</span>
+  </div>
+  <canvas id="stage"></canvas>
+  <div id="status">Carregando mapa…</div>
+  <script>
+    const canvas = document.querySelector('#stage');
+    const ctx = canvas.getContext('2d');
+    const status = document.querySelector('#status');
+    const image = new Image();
+    const state = { scale: 0.5, x: 0, y: 0, points: [], selected: -1, selectedMany: new Set(), direction: 'down', drag: null, pan: null, showExisting: true, preview: true, showGroups: false, brushSize: 8, collisionMode: false, collisionDrag: null, collisionLast: null, hover: null, brush: null, brushLast: null };
+    const undoStack=[],redoStack=[];
+    function remember(){undoStack.push(JSON.stringify(state.points));if(undoStack.length>100)undoStack.shift();redoStack.length=0;}
+    function undo(){if(!undoStack.length)return;redoStack.push(JSON.stringify(state.points));state.points=JSON.parse(undoStack.pop());state.selectedMany.clear();if(state.selected>=state.points.length)state.selected=-1;draw();updateStatus();}
+    function redo(){if(!redoStack.length)return;undoStack.push(JSON.stringify(state.points));state.points=JSON.parse(redoStack.pop());state.selectedMany.clear();if(state.selected>=state.points.length)state.selected=-1;draw();updateStatus();}
+    const dirs = { up: '↑', down: '↓', left: '←', right: '→' };
+    const sitFrame = { down: 48, left: 49, right: 50, up: 51 };
+    // Keep these pixel offsets in sync with sittingShiftData in Player.ts.
+    const sitShift = { up: [0,3], down: [0,3], left: [0,3], right: [0,3] };
+    const avatar = new Image();
+    avatar.src = '/assets/character/adam.png';
+    const avatarCanvas = document.createElement('canvas'); avatarCanvas.width=32; avatarCanvas.height=48;
+    const avatarCtx=avatarCanvas.getContext('2d',{willReadFrequently:true});
+    let collisionMap, seatMapData, tiledCollisionMap;
+
+    function fit() {
+      const ratio = devicePixelRatio || 1;
+      canvas.width = Math.floor(canvas.clientWidth * ratio);
+      canvas.height = Math.floor(canvas.clientHeight * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      if (image.complete) {
+        state.scale = Math.min(canvas.clientWidth / image.width, canvas.clientHeight / image.height) * 0.92;
+        state.x = (canvas.clientWidth - image.width * state.scale) / 2;
+        state.y = (canvas.clientHeight - image.height * state.scale) / 2;
+      }
+      draw();
+    }
+    function toMap(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX-r.left-state.x)/state.scale, y: (e.clientY-r.top-state.y)/state.scale }; }
+    function zoomAt(factor,cx=canvas.clientWidth/2,cy=canvas.clientHeight/2){const old=state.scale;state.scale=Math.max(.15,Math.min(24,old*factor));state.x=cx-(cx-state.x)*state.scale/old;state.y=cy-(cy-state.y)*state.scale/old;draw();updateStatus();}
+    function focusSelected(){if(state.selected<0)return;const p=state.points[state.selected],shift=p.shift||sitShift[p.direction]||[0,0],cx=canvas.clientWidth/2,cy=canvas.clientHeight/2;state.scale=12;state.x=cx-(p.x+shift[0])*state.scale;state.y=cy-(p.y+shift[1])*state.scale;draw();updateStatus();}
+    document.querySelector('#zoomIn').addEventListener('click',()=>zoomAt(1.6));
+    document.querySelector('#zoomOut').addEventListener('click',()=>zoomAt(1/1.6));
+    document.querySelector('#focusSeat').addEventListener('click',focusSelected);
+    document.querySelector('#resetZoom').addEventListener('click',fit);
+    function draw() {
+      if (!image.complete) return;
+      ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(image, state.x, state.y, image.width*state.scale, image.height*state.scale);
+      if(state.collisionMode&&collisionMap){
+        const w=collisionMap.width,h=collisionMap.height,cw=collisionMap.tileWidth,ch=collisionMap.tileHeight;
+        ctx.fillStyle='rgba(239,68,68,.42)';
+        for(let i=0;i<collisionMap.data.length;i++)if(collisionMap.data[i])ctx.fillRect(state.x+(i%w)*cw*state.scale,state.y+Math.floor(i/w)*ch*state.scale,cw*state.scale,ch*state.scale);
+        if(cw*state.scale>=3){ctx.strokeStyle='rgba(255,255,255,.30)';ctx.lineWidth=1;for(let x=0;x<=w;x++) {const xx=state.x+x*cw*state.scale;ctx.beginPath();ctx.moveTo(xx,state.y);ctx.lineTo(xx,state.y+h*ch*state.scale);ctx.stroke();}for(let y=0;y<=h;y++){const yy=state.y+y*ch*state.scale;ctx.beginPath();ctx.moveTo(state.x,yy);ctx.lineTo(state.x+w*cw*state.scale,yy);ctx.stroke();}}
+      }
+      state.points.forEach((p,i) => {
+        if (p.existing && !state.showExisting) return;
+        const shift=p.shift||sitShift[p.direction]||[0,0];
+        const px=p.x+shift[0], py=p.y+shift[1];
+        const x=state.x+p.x*state.scale, y=state.y+p.y*state.scale;
+        const spriteX=state.x+px*state.scale, spriteY=state.y+py*state.scale;
+        if(state.preview&&avatar.complete&&avatar.naturalWidth){
+          avatarCtx.clearRect(0,0,32,48);avatarCtx.drawImage(avatar,sitFrame[p.direction]*32,0,32,48,0,0,32,48);
+          if(p.visible){const pixels=avatarCtx.getImageData(0,0,32,48);for(let yy=0;yy<48;yy++)for(let xx=0;xx<32;xx++)if(p.visible[yy]?.[xx]==='0')pixels.data[(yy*32+xx)*4+3]=0;avatarCtx.putImageData(pixels,0,0);}
+          ctx.drawImage(avatarCanvas,spriteX-16*state.scale,spriteY-24*state.scale,32*state.scale,48*state.scale);
+        }
+        if(state.showGroups&&p.group){const tag={chair:'C', 'office-chair':'E', pouf:'P', sofa:'S'}[p.group]||'?';ctx.fillStyle='#10141c';ctx.fillRect(x+5,y-13,13,13);ctx.fillStyle='#fff';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(tag,x+11.5,y-6.5);}
+        const radius=state.preview?Math.max(2,Math.min(4,3*state.scale+1)):Math.max(5,Math.min(9,5*state.scale+3));
+        ctx.beginPath(); ctx.arc(x,y,radius,0,Math.PI*2);
+        if(!state.preview){ctx.fillStyle=p.existing?'#ffb547':'#47e0a1';ctx.fill();}
+        ctx.lineWidth=i===state.selected?3:state.selectedMany.has(i)?2:1.5; ctx.strokeStyle=i===state.selected?'#fff':state.selectedMany.has(i)?'#47e0a1':'#17202a'; ctx.stroke();
+        if(!state.preview){ctx.fillStyle='#10141c';ctx.font=`bold ${Math.max(9,radius*1.4)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(dirs[p.direction]||'↓',x,y+0.5);}
+      });
+      if(state.collisionMode&&state.hover&&collisionMap){
+        const cx=Math.floor(state.hover.x/collisionMap.tileWidth),cy=Math.floor(state.hover.y/collisionMap.tileHeight);
+        if(cx>=0&&cy>=0&&cx<collisionMap.width&&cy<collisionMap.height){
+          ctx.strokeStyle='#ffffff';ctx.lineWidth=2;
+          ctx.strokeRect(state.x+cx*collisionMap.tileWidth*state.scale,state.y+cy*collisionMap.tileHeight*state.scale,collisionMap.tileWidth*state.scale,collisionMap.tileHeight*state.scale);
+        }
+      }
+    }
+    function closest(p) {
+      let found=-1, distance=15/state.scale;
+      state.points.forEach((q,i)=>{ if(q.existing&&!state.showExisting)return; const d=Math.hypot(p.x-q.x,p.y-q.y);if(d<distance){distance=d;found=i;} });
+      return found;
+    }
+    function pointOnAvatar(point,index){const p=state.points[index],shift=p.shift||sitShift[p.direction]||[0,0],x=p.x+shift[0],y=p.y+shift[1];return point.x>=x-16&&point.x<x+16&&point.y>=y-24&&point.y<y+24;}
+    function paintAvatar(point,value){if(state.selected<0)return;const p=state.points[state.selected],shift=p.shift||sitShift[p.direction]||[0,0],cx=point.x-(p.x+shift[0]-16),cy=point.y-(p.y+shift[1]-24),radius=state.brushSize/2;p.visible??=Array.from({length:48},()=> '1'.repeat(32));for(let y=Math.max(0,Math.floor(cy-radius));y<Math.min(48,Math.ceil(cy+radius));y++){const row=p.visible[y].split('');for(let x=Math.max(0,Math.floor(cx-radius));x<Math.min(32,Math.ceil(cx+radius));x++)if((x+.5-cx)**2+(y+.5-cy)**2<=radius**2)row[x]=value?'1':'0';p.visible[y]=row.join('');}draw();}
+    function paintAvatarLine(from,to,value){if(!from){paintAvatar(to,value);return;}const steps=Math.max(1,Math.ceil(Math.hypot(to.x-from.x,to.y-from.y)*state.scale));for(let i=1;i<=steps;i++){const t=i/steps;paintAvatar({x:from.x+(to.x-from.x)*t,y:from.y+(to.y-from.y)*t},value);}}
+    function paintCollision(p,value,redraw=true){
+      if(!collisionMap)return;
+      const x=Math.floor(p.x/collisionMap.tileWidth),y=Math.floor(p.y/collisionMap.tileHeight);
+      if(x<0||y<0||x>=collisionMap.width||y>=collisionMap.height)return;
+      collisionMap.data[y*collisionMap.width+x]=value;if(redraw)draw();
+    }
+    function paintCollisionLine(from,to,value){
+      if(!from){paintCollision(to,value);return;}
+      let x0=Math.floor(from.x/collisionMap.tileWidth),y0=Math.floor(from.y/collisionMap.tileHeight);
+      const x1=Math.floor(to.x/collisionMap.tileWidth),y1=Math.floor(to.y/collisionMap.tileHeight);
+      const dx=Math.abs(x1-x0),sx=x0<x1?1:-1,dy=-Math.abs(y1-y0),sy=y0<y1?1:-1;
+      let error=dx+dy;
+      while(true){paintCollision({x:(x0+.5)*collisionMap.tileWidth,y:(y0+.5)*collisionMap.tileHeight},value,false);if(x0===x1&&y0===y1)break;const e2=2*error;if(e2>=dy){error+=dy;x0+=sx;}if(e2<=dx){error+=dx;y0+=sy;}}
+      draw();updateStatus();
+    }
+    canvas.addEventListener('pointerdown',e=>{
+      if(e.button===1||(e.shiftKey&&e.button===0)||(e.button===2&&!state.collisionMode)){state.pan={x:e.clientX,y:e.clientY,sx:state.x,sy:state.y};canvas.setPointerCapture(e.pointerId);return;}
+      if(state.collisionMode){state.collisionDrag=e.button===2?0:1;state.collisionLast=toMap(e);paintCollisionLine(null,state.collisionLast,state.collisionDrag);canvas.setPointerCapture(e.pointerId);return;}
+      if(state.brush&&state.selected>=0&&pointOnAvatar(toMap(e),state.selected)){remember();state.drag={paint:true};state.brushLast=toMap(e);paintAvatar(state.brushLast,state.brush==='show');canvas.setPointerCapture(e.pointerId);return;}
+      const p=toMap(e), found=closest(p);
+      if(found>=0){
+        if(e.ctrlKey||e.metaKey){if(state.selectedMany.has(found))state.selectedMany.delete(found);else state.selectedMany.add(found);state.selected=found;if(state.points[found].group)document.querySelector('#seatGroup').value=state.points[found].group;}
+        else{remember();state.selected=found;state.selectedMany.clear();if(state.points[found].group)document.querySelector('#seatGroup').value=state.points[found].group;state.drag={index:found};canvas.setPointerCapture(e.pointerId);}
+      } else {remember();state.points.push({x:Math.round(p.x),y:Math.round(p.y),direction:state.direction,existing:false,...(document.querySelector('#seatGroup').value?{group:document.querySelector('#seatGroup').value}:{})});state.selected=state.points.length-1;state.selectedMany.clear();state.drag={index:state.selected};canvas.setPointerCapture(e.pointerId);}
+      draw(); updateStatus();
+    });
+    canvas.addEventListener('pointermove',e=>{
+      if(state.pan){state.x=state.pan.sx+e.clientX-state.pan.x;state.y=state.pan.sy+e.clientY-state.pan.y;draw();return;}
+      state.hover=toMap(e);
+      if(state.collisionDrag!==null){const next=toMap(e);paintCollisionLine(state.collisionLast,next,state.collisionDrag);state.collisionLast=next;return;}
+      if(state.drag?.paint){const next=toMap(e);paintAvatarLine(state.brushLast,next,state.brush==='show');state.brushLast=next;return;}
+      if(state.drag){const p=toMap(e),q=state.points[state.drag.index];q.x=Math.max(0,Math.min(image.width-1,Math.round(p.x)));q.y=Math.max(0,Math.min(image.height-1,Math.round(p.y)));draw();}
+      else draw();
+      updateStatus();
+    });
+    canvas.addEventListener('pointerup',()=>{state.drag=null;state.pan=null;state.collisionDrag=null;state.collisionLast=null;state.brushLast=null;updateStatus();});
+    canvas.addEventListener('contextmenu',e=>e.preventDefault());
+    canvas.addEventListener('wheel',e=>{e.preventDefault();const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;zoomAt(e.deltaY<0?1.12:.89,mx,my);},{passive:false});
+    document.querySelectorAll('[data-dir]').forEach(b=>b.addEventListener('click',()=>{state.direction=b.dataset.dir;document.querySelectorAll('[data-dir]').forEach(x=>x.classList.toggle('active',x===b));if(state.selected>=0){remember();state.points[state.selected].direction=state.direction;}draw();}));
+    document.querySelector('#existing').addEventListener('change',e=>{state.showExisting=e.target.checked;draw();});
+    document.querySelector('#preview').addEventListener('change',e=>{state.preview=e.target.checked;draw();});
+    document.querySelector('#showGroups').addEventListener('change',e=>{state.showGroups=e.target.checked;draw();});
+    document.querySelector('#brushSize').addEventListener('input',e=>{state.brushSize=Number(e.target.value);document.querySelector('#brushValue').textContent=`${state.brushSize} px`;});
+    document.querySelector('#hideBrush').addEventListener('click',()=>{state.brush=state.brush==='hide'?null:'hide';document.querySelector('#hideBrush').classList.toggle('active',state.brush==='hide');document.querySelector('#showBrush').classList.remove('active');});
+    document.querySelector('#showBrush').addEventListener('click',()=>{state.brush=state.brush==='show'?null:'show';document.querySelector('#showBrush').classList.toggle('active',state.brush==='show');document.querySelector('#hideBrush').classList.remove('active');});
+    function nudgeShift(axis,amount){if(state.selected<0)return;remember();const p=state.points[state.selected];p.shift??=[...(sitShift[p.direction]||[0,0])];p.shift[axis]+=amount;draw();updateStatus();}
+    document.querySelector('#shiftXMinus').addEventListener('click',()=>nudgeShift(0,-1));document.querySelector('#shiftXPlus').addEventListener('click',()=>nudgeShift(0,1));document.querySelector('#shiftYMinus').addEventListener('click',()=>nudgeShift(1,-1));document.querySelector('#shiftYPlus').addEventListener('click',()=>nudgeShift(1,1));
+    document.querySelector('#setGroup').addEventListener('click',()=>{const ids=new Set([...state.selectedMany,...(state.selected>=0?[state.selected]:[])]),group=document.querySelector('#seatGroup').value;if(!ids.size){status.textContent='Selecione um ou mais assentos primeiro';return;}if(!group){status.textContent='Escolha explicitamente: cadeira normal, escritório, puff ou sofá';return;}remember();ids.forEach(i=>state.points[i].group=group);draw();status.textContent=`${ids.size} assentos marcados como ${document.querySelector('#seatGroup').selectedOptions[0].textContent}`;});
+    document.querySelector('#clearGroup').addEventListener('click',()=>{const ids=new Set([...state.selectedMany,...(state.selected>=0?[state.selected]:[])]);if(!ids.size)return;remember();ids.forEach(i=>delete state.points[i].group);draw();status.textContent=`Tipo removido de ${ids.size} assentos`;});
+    document.querySelector('#applyTemplate').addEventListener('click',()=>{if(state.selected<0){status.textContent='Selecione o assento modelo primeiro';return;}const source=state.points[state.selected];if(!source.group){status.textContent='Defina o tipo do assento modelo primeiro';return;}const matches=state.points.filter((p,i)=>i!==state.selected&&p.group===source.group&&p.direction===source.direction);if(!matches.length){status.textContent='Não há outro assento com este tipo e esta direção. Os rótulos C/E/P/S mostram os tipos no mapa.';return;}remember();matches.forEach(p=>{if(source.shift)p.shift=[...source.shift];else delete p.shift;if(source.visible)p.visible=source.visible.slice();else delete p.visible;});draw();status.textContent=`Modelo copiado para ${matches.length} assentos: ${document.querySelector(`#seatGroup option[value="${source.group}"]`).textContent}, ${dirs[source.direction]||source.direction}`;});
+    document.querySelector('#undo').addEventListener('click',undo);document.querySelector('#redo').addEventListener('click',redo);
+    document.querySelector('#collisionMode').addEventListener('change',e=>{state.collisionMode=e.target.checked;draw();updateStatus();});
+    document.querySelector('#remove').addEventListener('click',()=>{if(state.selected>=0){remember();state.points.splice(state.selected,1);state.selected=-1;draw();updateStatus();}});
+    function updateStatus(){
+      if(state.collisionMode&&state.hover&&collisionMap){
+        const x=Math.floor(state.hover.x/collisionMap.tileWidth),y=Math.floor(state.hover.y/collisionMap.tileHeight);
+        const inside=x>=0&&y>=0&&x<collisionMap.width&&y<collisionMap.height;
+        const blocked=inside&&collisionMap.data[y*collisionMap.width+x]!==0;
+        status.textContent=inside?`Colisão ${blocked?'bloqueada':'livre'} · célula ${x}, ${y} · mapa ${x*collisionMap.tileWidth}, ${y*collisionMap.tileHeight} px`:'Fora do mapa';
+        return;
+      }
+      if(state.selected>=0){const p=state.points[state.selected];status.textContent=`${state.points.length} assentos · selecionado: ${dirs[p.direction]||'↓'} · x ${p.x}, y ${p.y} px`;return;}
+      status.textContent=`${state.points.length} assentos marcados · escala ${state.scale.toFixed(2)}×`;
+    }
+    function mapSeats(){
+      const result=structuredClone(seatMapData);
+      result.seats=state.points.map(({existing,...p})=>({...p,x:Math.round(p.x),y:Math.round(p.y)}));
+      return result;
+    }
+    function mapCollision(){
+      const result=structuredClone(tiledCollisionMap),layer=result.layers.find(l=>l.name==='Collision');
+      layer.data=collisionMap.data.slice();return result;
+    }
+    function downloadJSON(value,name){const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+    document.querySelector('#saveMap').addEventListener('click',()=>downloadJSON(mapSeats(),'seat-map.json'));
+    document.querySelector('#saveCollision').addEventListener('click',()=>downloadJSON(mapCollision(),'map-collision.json'));
+    document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return;}if((e.key==='Delete'||e.key==='Backspace')&&state.selected>=0)document.querySelector('#remove').click();});
+    image.onload=async()=>{
+      try {
+        const [seats,collision]=await Promise.all([fetch('/assets/map/seat-map.json').then(r=>r.json()),fetch('/assets/map/map-collision.json').then(r=>r.json())]);
+        seatMapData=seats;tiledCollisionMap=collision;state.points=seats.seats.map(p=>({...p,existing:true}));
+        const collisionLayer=collision.layers.find(l=>l.name==='Collision');collisionMap={width:collisionLayer.width,height:collisionLayer.height,tileWidth:collision.tilewidth,tileHeight:collision.tileheight,data:collisionLayer.data.slice()};
+      }
+      catch(err){console.warn('Não foi possível carregar os pontos atuais',err);}
+      fit();updateStatus();
+    };
+    image.onerror=()=>status.textContent='Não carregou o mapa. Abra esta página pelo servidor localhost:5173.';
+    avatar.onload=draw;
+    image.src='/assets/map/gather-map.png';
+    window.addEventListener('resize',fit);
+  </script>
+</body>
+</html>

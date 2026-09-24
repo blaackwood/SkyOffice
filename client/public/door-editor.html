@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SkyOffice · Editor de portas</title>
+  <style>
+    :root { color-scheme:dark; font:14px/1.45 Inter,Segoe UI,Arial,sans-serif; background:#111318; color:#e7e9ef }
+    * { box-sizing:border-box } body { margin:0;height:100vh;display:grid;grid-template-columns:300px 1fr;overflow:hidden }
+    aside { padding:20px;background:#1b1d24;border-right:1px solid #30333d;overflow:auto } h1 { margin:0 0 6px;font-size:20px }
+    .sub,.help,.hint { color:#b9bfcc } .sub { margin:0 0 18px } .help { margin:16px 0;background:#242730;border-radius:8px;padding:11px }
+    label { display:block;color:#c7cad3;margin:15px 0 6px;font-size:12px } select,input[type=range] { width:100% }
+    select,button,.link { color:#eee;background:#292c35;border:1px solid #424652;border-radius:8px;padding:9px 11px;font:inherit }
+    button,.link { cursor:pointer;text-decoration:none } button:hover,.link:hover { background:#353946 } button:disabled { opacity:.45;cursor:not-allowed }
+    .seg { display:flex;gap:6px }.seg button { flex:1 }.active { border-color:#5365ff;background:#253398 }
+    .actions { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px }.primary { grid-column:1/-1;background:#3948d5;border-color:#5261ee }
+    .hint { min-height:42px;margin-top:12px;font-size:12px }.mapShell { min-width:0;min-height:0;display:flex;flex-direction:column }
+    header { height:52px;flex:none;border-bottom:1px solid #30333d;display:flex;align-items:center;gap:12px;padding:0 16px;color:#b7bdc9 }
+    #mapViewport { overflow:auto;flex:1;padding:16px;background:#101216 } #mapCanvas { display:block;image-rendering:pixelated;background:#20232b;box-shadow:0 8px 40px #0008;cursor:grab }
+    #mapCanvas.dragging { cursor:grabbing } @media(max-width:760px) { body{grid-template-columns:1fr;grid-template-rows:auto 1fr} aside{max-height:44vh;border-right:0;border-bottom:1px solid #30333d} }
+  </style>
+</head>
+<body>
+  <aside>
+    <h1>Editor de portas</h1>
+    <p class="sub">Arraste a porta inteira até o vão. O desenho mostra as duas folhas e os puxadores.</p>
+    <label for="room">Cômodo</label><select id="room"></select>
+    <div class="help">Só as portas adicionadas aqui aparecem no jogo. Clique em “Adicionar porta” e depois clique no vão correto do mapa. Arraste uma porta existente para reposicioná-la.</div>
+    <label>Orientação do vão</label><div class="seg"><button data-wall="horizontal">Horizontal</button><button data-wall="vertical">Vertical</button></div>
+    <button id="rotate" style="width:100%;margin-top:7px;background:#3948d5;border-color:#5261ee">↻ Girar porta selecionada · horizontal</button>
+    <label for="width">Largura da porta: <span id="widthValue">144</span> px</label><input id="width" type="range" min="56" max="176" value="144" />
+    <label for="height">Altura visual: <span id="heightValue">88</span> px</label><input id="height" type="range" min="40" max="128" value="88" />
+    <label>Prévia</label><div class="seg"><button id="previewClose" class="active">Fechada</button><button id="previewOpen">Vão normal</button></div>
+    <div id="hint" class="hint">Carregando mapa…</div>
+    <div class="actions"><button id="add" class="primary">Adicionar porta</button><button id="save">Salvar posições</button><button id="remove">Apagar porta selecionada</button><button id="export">Exportar JSON</button><button id="import">Importar JSON</button><button id="focus">Centralizar cômodo</button><a class="link" href="/" target="_blank" rel="noopener">Abrir o jogo</a><input id="file" type="file" accept="application/json,.json" hidden /></div>
+  </aside>
+  <main class="mapShell"><header><span>Mapa do SkyOffice</span><label for="zoom" style="margin:0 0 0 auto">Zoom</label><input id="zoom" type="range" min="0.5" max="2.5" step="0.1" value="1" style="width:150px" /><span id="zoomValue">100%</span></header><div id="mapViewport"><canvas id="mapCanvas" width="2176" height="1696"></canvas></div></main>
+  <script>
+    (() => {
+      const KEY='skyoffice.room-door-layout.v2', canvas=document.getElementById('mapCanvas'),ctx=canvas.getContext('2d'),roomSelect=document.getElementById('room'),viewport=document.getElementById('mapViewport'),image=new Image()
+      const state={areas:[],doors:new Map(),current:'',selectedDoorId:'',wall:'horizontal',open:false,dragging:false,placeMode:false,pointer:null,zoom:1,fit:1}
+      const door=()=>state.doors.get(state.selectedDoorId), area=()=>state.areas.find(a=>a.id===state.current)
+      const bounds=a=>{const xs=a.polygon.map(p=>p[0]),ys=a.polygon.map(p=>p[1]);return{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}}
+      function drawDoor(d,selected){
+        const w=d.width,h=d.height
+        ctx.save();ctx.translate(d.x,d.y)
+        if(d.wall==='vertical'){
+          if(selected&&state.open){
+            ctx.fillStyle='#b77d59';ctx.fillRect(3,-w/2,2,w)
+            ctx.fillStyle='#f4c49a';ctx.fillRect(4,-w/2+1,1,w-2)
+            ctx.restore();return
+          }
+          ctx.fillStyle='#b77d59';ctx.fillRect(-4,-w/2,8,w)
+          ctx.fillStyle='#e6a97d';ctx.fillRect(-2,-w/2,5,w)
+          ctx.fillStyle='#f4c49a';ctx.fillRect(-1,-w/2+1,1,w-2)
+          if(selected){ctx.strokeStyle='#ffe07b';ctx.lineWidth=2;ctx.strokeRect(-8,-w/2-3,16,w+6)}ctx.restore();return
+        }
+        // Small jambs, recessed wood panels, grain and hinge details match the in-game door.
+        const half=w/2
+        ctx.fillStyle='#80523e';ctx.fillRect(-half-4,-h/2,4,h);ctx.fillRect(half,-h/2,4,h)
+        ctx.fillStyle='#d09a70';ctx.fillRect(-half-3,-h/2+2,1,h-4);ctx.fillRect(half+2,-h/2+2,1,h-4)
+        if(selected&&state.open){
+          // Keep the doorway visible while showing the leaves folded against the jambs.
+          ctx.fillStyle='#b77d59';ctx.fillRect(-half+1,-h/2,4,h);ctx.fillRect(half-5,-h/2,4,h)
+          ctx.fillStyle='#e6a97d';ctx.fillRect(-half+2,-h/2+2,2,h-4);ctx.fillRect(half-4,-h/2+2,2,h-4)
+          ctx.restore();return
+        }
+        for(let side=0;side<2;side++){
+          ctx.save();ctx.translate(side===0?-w/2:w/2,0)
+          const left=side===0?0:-half
+          const ix=Math.max(3,Math.min(8,half*.1)),iy=Math.max(4,Math.min(10,h*.1))
+          ctx.fillStyle='#e6a97d';ctx.fillRect(left,-h/2,half,h)
+          ctx.fillStyle='#c8855f';ctx.fillRect(left+ix,-h/2+iy,half-ix*2,h-iy*2)
+          ctx.fillStyle='#e9b28a';ctx.fillRect(left+ix+1,-h/2+iy+1,half-ix*2-2,h-iy*2-2)
+          ctx.fillStyle='#f4c49a';ctx.fillRect(left+ix+1,-h/2+iy+1,half-ix*2-2,2)
+          ctx.fillStyle='#d89c71';ctx.fillRect(left+ix+1,h/2-iy-2,half-ix*2-2,1)
+          ctx.fillStyle='#d89c71';ctx.fillRect(left+half*.32,-h/2+iy+4,1,h-iy*2-8);ctx.fillRect(left+half*.72,-h/2+iy+4,1,h-iy*2-8)
+          const outer=side===0?2:-3
+          ctx.fillStyle='#70554a';ctx.fillRect(outer,-h*.32,3,5);ctx.fillRect(outer,h*.26,3,5)
+          ctx.fillStyle='#c9a06c';ctx.fillRect(outer+1,-h*.32+1,1,3);ctx.fillRect(outer+1,h*.26+1,1,3)
+          ctx.fillStyle='#98634a';ctx.fillRect(side===0?half-2:-half,-h/2,2,h)
+          const knobX=side===0?half-9:-half+9
+          ctx.fillStyle='#76543b';ctx.beginPath();ctx.arc(knobX,0,3,0,Math.PI*2);ctx.fill()
+          ctx.fillStyle='#d7ad66';ctx.beginPath();ctx.arc(knobX,0,2,0,Math.PI*2);ctx.fill()
+          ctx.fillStyle='#f0d596';ctx.fillRect(knobX-1,-1,1,2)
+          ctx.restore()
+        }
+        if(selected){ctx.strokeStyle='#ffe07b';ctx.lineWidth=2;ctx.strokeRect(-w/2-3,-h/2-3,w+6,h+6)}ctx.restore()
+      }
+      function draw(){if(!image.complete||!image.naturalWidth)return;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0)
+        state.areas.forEach(a=>{ctx.beginPath();a.polygon.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=a.id===state.current?'#31d9bd24':'#75aaff0c';ctx.fill();ctx.strokeStyle=a.id===state.current?'#3df1cf':'#70a7ff50';ctx.lineWidth=a.id===state.current?3:1;ctx.stroke()})
+        state.doors.forEach((d,id)=>drawDoor(d,id===state.selectedDoorId))
+        if(state.placeMode&&state.pointer){ctx.save();ctx.globalAlpha=.58;drawDoor({x:state.pointer.x,y:state.pointer.y,wall:state.wall,width:Number(document.getElementById('width').value),height:Number(document.getElementById('height').value)},false);ctx.restore()}
+      }
+      function update(){const d=door();document.querySelectorAll('[data-wall]').forEach(b=>b.classList.toggle('active',b.dataset.wall===state.wall));document.getElementById('rotate').textContent=`⟳ Girar ${state.placeMode?'nova porta':'porta selecionada'} 90° (R) · ${state.wall==='horizontal'?'horizontal':'vertical'}`;document.getElementById('remove').disabled=!d||state.placeMode;document.getElementById('width').value=d?.width??144;document.getElementById('height').value=d?.height??88;document.getElementById('widthValue').textContent=d?.width??144;document.getElementById('heightValue').textContent=d?.height??88;document.getElementById('previewClose').classList.toggle('active',!state.open);document.getElementById('previewOpen').classList.toggle('active',state.open);const count=[...state.doors.values()].filter(item=>item.roomId===state.current).length;document.getElementById('hint').textContent=state.placeMode?'Mova o cursor para conferir a orientação; clique quando a porta estiver alinhada com o vão.':d?`Porta selecionada · ${count} ${count===1?'porta':'portas'} neste cômodo · arraste para reposicionar.`:'Este cômodo está sem porta. Clique em Adicionar porta e depois no mapa.';draw()}
+      function fit(){state.fit=Math.min((viewport.clientWidth-32)/canvas.width,(viewport.clientHeight-32)/canvas.height,1);const s=state.fit*state.zoom;canvas.style.width=`${canvas.width*s}px`;canvas.style.height=`${canvas.height*s}px`;document.getElementById('zoomValue').textContent=`${Math.round(state.zoom*100)}%`;draw()}
+      function center(){const a=area();if(!a)return;const b=bounds(a),s=state.fit*state.zoom;viewport.scrollLeft=Math.max(0,(b.x+b.w/2)*s-viewport.clientWidth/2);viewport.scrollTop=Math.max(0,(b.y+b.h/2)*s-viewport.clientHeight/2)}
+      function setRoom(id){state.current=id;state.open=false;const first=[...state.doors.entries()].find(([,item])=>item.roomId===id);state.selectedDoorId=first?.[0]||'';const d=door();state.wall=d?.wall||'horizontal';update();center()}
+      function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
+      function hit(d,p){const dx=p.x-d.x,dy=p.y-d.y;if(d.wall==='vertical')return Math.abs(dx)<=12&&Math.abs(dy)<=d.width/2+8;return Math.abs(dx)<=d.width/2+8&&Math.abs(dy)<=d.height/2+8}
+      canvas.addEventListener('pointerdown',e=>{const p=point(e);if(state.placeMode){const id=`door-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;const placed={doorId:id,roomId:state.current,x:p.x,y:p.y,wall:state.wall,width:Number(document.getElementById('width').value),height:Number(document.getElementById('height').value)};state.doors.set(id,placed);state.selectedDoorId=id;state.placeMode=false;state.pointer=null;canvas.style.cursor='grab';persist();update();return}const found=[...state.doors.entries()].reverse().find(([,item])=>hit(item,p));if(found){state.selectedDoorId=found[0];state.current=found[1].roomId;roomSelect.value=state.current;state.wall=found[1].wall;state.dragging=true;canvas.classList.add('dragging');canvas.setPointerCapture(e.pointerId);update()}})
+      canvas.addEventListener('pointermove',e=>{const p=point(e);if(state.dragging){const d=door();d.x=p.x;d.y=p.y;draw();return}if(state.placeMode){state.pointer=p;draw()}})
+      canvas.addEventListener('pointerup',()=>{if(state.dragging)persist();state.dragging=false;canvas.classList.remove('dragging')});canvas.addEventListener('pointercancel',()=>{if(state.dragging)persist();state.dragging=false;canvas.classList.remove('dragging')})
+      document.querySelectorAll('[data-wall]').forEach(b=>b.onclick=()=>{state.wall=b.dataset.wall;if(door()&&!state.placeMode)door().wall=state.wall;update()})
+      const persist=()=>localStorage.setItem(KEY,JSON.stringify({version:1,doors:[...state.doors.values()]}))
+      const rotateSelected=()=>{const d=door();if(state.placeMode){state.wall=state.wall==='horizontal'?'vertical':'horizontal';update();return}if(!d){state.wall=state.wall==='horizontal'?'vertical':'horizontal';update();return}d.wall=d.wall==='horizontal'?'vertical':'horizontal';state.wall=d.wall;update();persist();document.getElementById('hint').textContent=`Porta girada para ${d.wall==='vertical'?'vertical':'horizontal'} e salva.`}
+      document.getElementById('rotate').onclick=rotateSelected
+      window.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='r'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)){e.preventDefault();rotateSelected()}})
+      for(const key of ['width','height'])document.getElementById(key).oninput=e=>{if(door()&&!state.placeMode)door()[key]=Number(e.target.value);draw();update()}
+      document.getElementById('previewClose').onclick=()=>{state.open=false;update()};document.getElementById('previewOpen').onclick=()=>{state.open=true;update()};document.getElementById('zoom').oninput=e=>{state.zoom=Number(e.target.value);fit()};document.getElementById('focus').onclick=center;document.getElementById('remove').onclick=()=>{if(state.placeMode||!state.selectedDoorId)return;const selected=door();if(!selected||selected.roomId!==state.current)return;state.doors.delete(state.selectedDoorId);state.selectedDoorId=[...state.doors.entries()].find(([,item])=>item.roomId===state.current)?.[0]||'';persist();update()}
+      document.getElementById('add').onclick=()=>{state.placeMode=true;state.pointer=null;canvas.style.cursor='crosshair';update()}
+      const data=()=>({version:1,doors:[...state.doors.values()]})
+      document.getElementById('save').onclick=()=>{persist();document.getElementById('hint').textContent='Posições salvas neste navegador. Entre no jogo para ver as portas animadas.'}
+      document.getElementById('export').onclick=()=>{const a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(data(),null,2)],{type:'application/json'}));a.href=u;a.download='skyoffice-door-layout.json';a.click();URL.revokeObjectURL(u)}
+      document.getElementById('import').onclick=()=>document.getElementById('file').click();document.getElementById('file').onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());state.doors=new Map((j.doors||[]).map((d,i)=>{const id=d.doorId||`${d.roomId}__${i}`;return[id,{...d,doorId:id,width:d.width||144,height:d.height||88,wall:d.wall||'horizontal'}]}));state.selectedDoorId='';update()}catch{document.getElementById('hint').textContent='Não consegui abrir esse JSON.'}}
+      window.addEventListener('resize',fit)
+      Promise.all([fetch('/assets/map/room-areas.json').then(r=>r.json()),new Promise(resolve=>{image.onload=resolve;image.onerror=()=>resolve(null);image.src='/assets/map/gather-map.png'})]).then(([json])=>{
+        state.areas=(json.areas||[]).filter(a=>a.focusOnEnter&&a.polygon?.length>=3);try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved?.doors?.length)state.doors=new Map(saved.doors.map((d,i)=>{const id=d.doorId||`${d.roomId}__${i}`;return[id,{...d,doorId:id,width:d.width||144,height:d.height||88,wall:d.wall||'horizontal'}]}))}catch{}
+        if(state.doors.size)state.doors.forEach(d=>{if(d.hinge!==undefined||d.swing!==undefined)d.width=Math.max(144,(d.width||40)*2);else if(d.width===96&&d.height===72){d.width=144;d.height=88}else d.width=Math.max(56,d.width||144);d.height=d.height||88})
+        state.areas.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.name;roomSelect.append(o)});roomSelect.onchange=()=>setRoom(roomSelect.value);fit();setRoom(state.areas[0]?.id||'')
+      }).catch(()=>document.getElementById('hint').textContent='Abra este editor pelo servidor local do SkyOffice.')
+    })()
+  </script>
+</body>
+</html>

@@ -1,0 +1,973 @@
+{
+  "image": {
+    "width": 2176,
+    "height": 1696
+  },
+  "areas": [
+    {
+      "id": "area-1790199971605-0",
+      "name": "Team",
+      "isolateVoice": false,
+      "polygon": [
+        [
+          1152,
+          802
+        ],
+        [
+          1535,
+          801
+        ],
+        [
+          1535,
+          992
+        ],
+        [
+          1153,
+          992
+        ],
+        [
+          1151,
+          801
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "area-1790200040726-1",
+      "name": "Central Couches",
+      "isolateVoice": false,
+      "polygon": [
+        [
+          863,
+          800
+        ],
+        [
+          1120,
+          800
+        ],
+        [
+          1119,
+          991
+        ],
+        [
+          864,
+          991
+        ],
+        [
+          864,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "area-1790200064878-2",
+      "name": "Team",
+      "isolateVoice": false,
+      "polygon": [
+        [
+          544,
+          801
+        ],
+        [
+          831,
+          801
+        ],
+        [
+          831,
+          991
+        ],
+        [
+          544,
+          992
+        ],
+        [
+          544,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "area-1790200110788-3",
+      "name": "Meeting Room: Green Library",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1284,
+          1118
+        ],
+        [
+          1597,
+          1118
+        ],
+        [
+          1597,
+          1377
+        ],
+        [
+          1284,
+          1377
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 1440,
+        "y": 1118,
+        "orientation": "horizontal",
+        "double": true
+      }
+    },
+    {
+      "id": "area-1790200147873-4",
+      "name": "Lobby",
+      "isolateVoice": false,
+      "polygon": [
+        [
+          835,
+          1116
+        ],
+        [
+          1275,
+          1119
+        ],
+        [
+          1274,
+          1374
+        ],
+        [
+          835,
+          1375
+        ],
+        [
+          834,
+          1248
+        ],
+        [
+          833,
+          1116
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "area-1790200187886-5",
+      "name": "Lobby Couches",
+      "isolateVoice": false,
+      "polygon": [
+        [
+          866,
+          1150
+        ],
+        [
+          863,
+          1245
+        ],
+        [
+          992,
+          1246
+        ],
+        [
+          991,
+          1152
+        ],
+        [
+          866,
+          1150
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "area-1790200211458-6",
+      "name": "Meeting Room: Media Room",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          485,
+          1121
+        ],
+        [
+          825,
+          1121
+        ],
+        [
+          827,
+          1375
+        ],
+        [
+          485,
+          1376
+        ],
+        [
+          486,
+          1122
+        ]
+      ],
+      "focusOnEnter": true
+    },
+    {
+      "id": "area-1790200251777-7",
+      "name": "Meeting Room: Study Huddle",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          475,
+          928
+        ],
+        [
+          323,
+          927
+        ],
+        [
+          324,
+          1088
+        ],
+        [
+          475,
+          1089
+        ],
+        [
+          475,
+          928
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 475,
+        "y": 1008,
+        "orientation": "vertical"
+      }
+    },
+    {
+      "id": "area-1790200287499-8",
+      "name": "Meeting Room: Coffe Huddle",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          473,
+          704
+        ],
+        [
+          475,
+          863
+        ],
+        [
+          325,
+          865
+        ],
+        [
+          325,
+          704
+        ],
+        [
+          472,
+          704
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 475,
+        "y": 784,
+        "orientation": "vertical"
+      }
+    },
+    {
+      "id": "area-1790200328588-9",
+      "name": "Meeting Room: Data Huddle",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1604,
+          928
+        ],
+        [
+          1756,
+          928
+        ],
+        [
+          1756,
+          1087
+        ],
+        [
+          1602,
+          1087
+        ],
+        [
+          1604,
+          927
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 1602,
+        "y": 1008,
+        "orientation": "vertical"
+      }
+    },
+    {
+      "id": "area-1790200353691-10",
+      "name": "Meeting Room: Fishtank Huddle",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1602,
+          704
+        ],
+        [
+          1755,
+          704
+        ],
+        [
+          1755,
+          863
+        ],
+        [
+          1603,
+          863
+        ],
+        [
+          1603,
+          703
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 1602,
+        "y": 784,
+        "orientation": "vertical"
+      }
+    },
+    {
+      "id": "area-1790200385943-11",
+      "name": "Coworking area: Koi Pond",
+      "isolateVoice": false,
+      "polygon": [
+        [
+          929,
+          453
+        ],
+        [
+          1150,
+          452
+        ],
+        [
+          1150,
+          628
+        ],
+        [
+          929,
+          627
+        ],
+        [
+          927,
+          454
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "area-1790200490052-12",
+      "name": "Cômodo 13",
+      "isolateVoice": false,
+      "polygon": [],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-0",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          544,
+          800
+        ],
+        [
+          640,
+          800
+        ],
+        [
+          640,
+          896
+        ],
+        [
+          544,
+          896
+        ],
+        [
+          544,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-1",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          640,
+          800
+        ],
+        [
+          736,
+          800
+        ],
+        [
+          736,
+          896
+        ],
+        [
+          640,
+          896
+        ],
+        [
+          640,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-2",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          736,
+          800
+        ],
+        [
+          832,
+          800
+        ],
+        [
+          832,
+          896
+        ],
+        [
+          736,
+          896
+        ],
+        [
+          736,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-3",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          544,
+          896
+        ],
+        [
+          640,
+          896
+        ],
+        [
+          640,
+          992
+        ],
+        [
+          544,
+          992
+        ],
+        [
+          544,
+          896
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-4",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          640,
+          896
+        ],
+        [
+          736,
+          896
+        ],
+        [
+          736,
+          992
+        ],
+        [
+          640,
+          992
+        ],
+        [
+          640,
+          896
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-5",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          736,
+          896
+        ],
+        [
+          832,
+          896
+        ],
+        [
+          832,
+          992
+        ],
+        [
+          736,
+          992
+        ],
+        [
+          736,
+          896
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-6",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1152,
+          800
+        ],
+        [
+          1248,
+          800
+        ],
+        [
+          1248,
+          896
+        ],
+        [
+          1152,
+          896
+        ],
+        [
+          1152,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-7",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1248,
+          800
+        ],
+        [
+          1344,
+          800
+        ],
+        [
+          1344,
+          896
+        ],
+        [
+          1248,
+          896
+        ],
+        [
+          1248,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-8",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1344,
+          800
+        ],
+        [
+          1440,
+          800
+        ],
+        [
+          1440,
+          896
+        ],
+        [
+          1344,
+          896
+        ],
+        [
+          1344,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-9",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1440,
+          800
+        ],
+        [
+          1536,
+          800
+        ],
+        [
+          1536,
+          896
+        ],
+        [
+          1440,
+          896
+        ],
+        [
+          1440,
+          800
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-10",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1152,
+          896
+        ],
+        [
+          1248,
+          896
+        ],
+        [
+          1248,
+          992
+        ],
+        [
+          1152,
+          992
+        ],
+        [
+          1152,
+          896
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-11",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1248,
+          896
+        ],
+        [
+          1344,
+          896
+        ],
+        [
+          1344,
+          992
+        ],
+        [
+          1248,
+          992
+        ],
+        [
+          1248,
+          896
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-12",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1344,
+          896
+        ],
+        [
+          1440,
+          896
+        ],
+        [
+          1440,
+          992
+        ],
+        [
+          1344,
+          992
+        ],
+        [
+          1344,
+          896
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-13",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1440,
+          896
+        ],
+        [
+          1536,
+          896
+        ],
+        [
+          1536,
+          992
+        ],
+        [
+          1440,
+          992
+        ],
+        [
+          1440,
+          896
+        ]
+      ],
+      "focusOnEnter": false
+    },
+    {
+      "id": "desk-slot-14",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          453,
+          512
+        ],
+        [
+          608,
+          512
+        ],
+        [
+          608,
+          704
+        ],
+        [
+          453,
+          704
+        ],
+        [
+          453,
+          512
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 528,
+        "y": 704,
+        "orientation": "horizontal",
+        "double": true
+      }
+    },
+    {
+      "id": "desk-slot-15",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          612,
+          511
+        ],
+        [
+          765,
+          511
+        ],
+        [
+          765,
+          706
+        ],
+        [
+          612,
+          706
+        ],
+        [
+          612,
+          511
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 688,
+        "y": 704,
+        "orientation": "horizontal",
+        "double": true
+      }
+    },
+    {
+      "id": "desk-slot-16",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          771,
+          510
+        ],
+        [
+          925,
+          510
+        ],
+        [
+          925,
+          704
+        ],
+        [
+          771,
+          704
+        ],
+        [
+          771,
+          510
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 848,
+        "y": 704,
+        "orientation": "horizontal",
+        "double": true
+      }
+    },
+    {
+      "id": "desk-slot-17",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1156,
+          512
+        ],
+        [
+          1308,
+          512
+        ],
+        [
+          1308,
+          702
+        ],
+        [
+          1156,
+          702
+        ],
+        [
+          1156,
+          512
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 1200,
+        "y": 704,
+        "orientation": "horizontal",
+        "double": true
+      }
+    },
+    {
+      "id": "desk-slot-18",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1315,
+          512
+        ],
+        [
+          1468,
+          512
+        ],
+        [
+          1468,
+          704
+        ],
+        [
+          1315,
+          704
+        ],
+        [
+          1315,
+          512
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 1408,
+        "y": 704,
+        "orientation": "horizontal",
+        "double": true
+      }
+    },
+    {
+      "id": "desk-slot-19",
+      "name": "Unclaimed Desk",
+      "isolateVoice": true,
+      "polygon": [
+        [
+          1476,
+          511
+        ],
+        [
+          1627,
+          511
+        ],
+        [
+          1627,
+          705
+        ],
+        [
+          1476,
+          705
+        ],
+        [
+          1476,
+          511
+        ]
+      ],
+      "focusOnEnter": true,
+      "door": {
+        "x": 1552,
+        "y": 704,
+        "orientation": "horizontal",
+        "double": true
+      }
+    }
+  ]
+}

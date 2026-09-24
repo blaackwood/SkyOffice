@@ -1,0 +1,388 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": false,
+    "entries": {
+      ".write": true,
+      "$id": {
+        ".validate": "newData.hasChildren(['name','date'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+        },
+        "date": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+        },
+        "hours": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 24"
+        },
+        "questions": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3000"
+        },
+        "flashcards": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000"
+        },
+        "corrections": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3000"
+        },
+        "aula": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 24"
+        },
+        "mood": {
+          ".validate": "newData.val() == 'baixo' || newData.val() == 'neutro' || newData.val() == 'bom' || newData.val() == 'alto'"
+        },
+        "ts": {
+          ".validate": "newData.val() == null || newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "essays": {
+      ".write": true,
+      "$id": {
+        ".validate": "newData.hasChildren(['name','title','text'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "title": {
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "text": {
+          ".validate": "newData.isString() && newData.val().length <= 20000"
+        },
+        "ts": {
+          ".validate": "newData.isNumber()"
+        },
+        "grade": {
+          ".validate": "newData.val() == null || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000)"
+        },
+        "gradeScale": {
+          ".validate": "newData.val() == null || newData.isNumber()"
+        },
+        "comment": {
+          ".validate": "newData.val() == null || (newData.isString() && newData.val().length <= 500)"
+        },
+        "aiFeedback": {
+          ".validate": "newData.val() == null || (newData.isString() && newData.val().length <= 4000)"
+        },
+        "aiCorrection": {
+          ".validate": "newData.val() == null || newData.hasChildren()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "live": {
+      ".write": true,
+      ".indexOn": ["name"],
+      "$id": {
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "accumulated": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "runningSince": {
+          ".validate": "newData.val() == null || newData.isNumber()"
+        },
+        "startedAt": {
+          ".validate": "newData.val() == null || newData.isNumber()"
+        },
+        "pausedAt": {
+          ".validate": "newData.val() == null || newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "notes": {
+      ".write": true,
+      "$id": {
+        ".validate": "newData.hasChildren(['to','message','ts'])",
+        "to": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "from": {
+          ".validate": "newData.val() == null || (newData.isString() && newData.val().length <= 40)"
+        },
+        "message": {
+          ".validate": "newData.isString() && newData.val().length <= 140"
+        },
+        "ts": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "reactions": {
+      ".write": true,
+      "$key": {
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "week": {
+          ".validate": "newData.isString()"
+        },
+        "claps": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "fire": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "muscle": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "heart": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "enquete": {
+      ".write": true,
+      "question": {
+        ".validate": "newData.isString() && newData.val().length <= 200"
+      },
+      "options": {
+        ".validate": "newData.hasChildren()"
+      },
+      "votes": {
+        "$idx": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      },
+      "$other": {
+        ".validate": false
+      }
+    },
+    "config": {
+      "weeklyGoal": {
+        ".write": true,
+        ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 5000"
+      },
+      "seasonStartDate": {
+        ".write": true,
+        ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+      },
+      "seasonStartMs": {
+        ".write": true,
+        ".validate": "newData.val() == null || (newData.isNumber() && newData.val() >= 0)"
+      },
+      "goalCelebratedWeek": {
+        ".write": true,
+        ".validate": "newData.isString()"
+      },
+      "notesClearedDate": {
+        ".write": true,
+        ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+      },
+      "weeklyRestDay": {
+        ".write": true,
+        ".validate": "newData.val() == null || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 6)"
+      }
+    },
+    "restDays": {
+      ".write": true,
+      "$id": {
+        ".validate": "newData.hasChildren(['name','date'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "date": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+        }
+      }
+    },
+    "avatarChoices": {
+      ".write": true,
+      "$name": {
+        ".validate": "newData.isString() && newData.val().length <= 8"
+      }
+    },
+    "courses": {
+      ".write": true,
+      "$name": {
+        ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+      }
+    },
+    "pins": {
+      ".write": true,
+      "$name": {
+        ".validate": "newData.hasChildren(['hash'])",
+        "hash": {
+          ".validate": "newData.isString() && newData.val().length == 64"
+        },
+        "createdAt": {
+          ".validate": "newData.val() == null || newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "inactiveNames": {
+      ".write": true,
+      "$name": {
+        ".validate": "newData.isBoolean() && newData.val() == true"
+      }
+    },
+    "adminLog": {
+      ".write": true,
+      "$id": {
+        ".validate": "newData.hasChildren(['ts','action'])",
+        "ts": {
+          ".validate": "newData.isNumber()"
+        },
+        "action": {
+          ".validate": "newData.isString() && newData.val().length <= 300"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "room": {
+      ".write": true,
+      "players": {
+        "$key": {
+          "n": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "x": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 44"
+          },
+          "y": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30"
+          },
+          "d": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
+          },
+          "s": {
+            ".validate": "newData.isNumber() && newData.val() >= -1 && newData.val() <= 40"
+          },
+          "a": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "h": {
+            ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "r": {
+            ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "rt": {
+            ".validate": "newData.isNumber()"
+          },
+          "t": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          },
+          "v": {
+            ".validate": "newData.isString() && newData.val().length <= 3"
+          }
+        }
+      },
+      "timer": {
+        "start": {
+          ".validate": "newData.isNumber()"
+        },
+        "focus": {
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 120"
+        },
+        "brk": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 60"
+        },
+        "cycles": {
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 12"
+        },
+        "paused": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "shift": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "$other": {
+          ".validate": false
+        }
+      },
+      "locks": {
+        "$id": {
+          "n": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "t": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "avatars": {
+        "$k": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        }
+      },
+      "sig": {
+        "$to": {
+          "$from": {
+            "t": {
+              ".validate": "newData.val() == 'o' || newData.val() == 'a'"
+            },
+            "s": {
+              ".validate": "newData.isString() && newData.val().length <= 16000"
+            },
+            "ts": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      },
+      "chat": {
+        "$id": {
+          "n": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "k": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
+          "m": {
+            ".validate": "newData.isString() && newData.val().length <= 200"
+          },
+          "t": {
+            ".validate": "newData.isNumber()"
+          },
+          "x": {
+            ".validate": "newData.isNumber()"
+          },
+          "y": {
+            ".validate": "newData.isNumber()"
+          },
+          "sc": {
+            ".validate": "newData.val() == 'all' || newData.val() == 'near' || newData.val() == 'dm'"
+          },
+          "to": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "$other": {
+        ".validate": false
+      }
+    }
+  }
+}

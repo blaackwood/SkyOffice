@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mapear cômodos — SkyOffice</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10141c;color:#edf2fb;font:14px system-ui,sans-serif}body{display:flex;flex-direction:column}
+    #bar{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:8px 10px;background:#1a202b;border-bottom:1px solid #303848}strong{margin-right:8px}button,label,.field{border:1px solid #384254;background:#242c39;color:#edf2fb;border-radius:7px;padding:7px 10px}button{cursor:pointer}button:hover{filter:brightness(1.15)}button.active{background:#195e50;border-color:#56c9a6}label{display:flex;align-items:center;gap:6px}input[type=checkbox]{accent-color:#57d6aa}input[type=text]{width:150px;border:0;outline:0;background:transparent;color:#fff;font:inherit}.field{display:flex;align-items:center;gap:5px;padding:2px 8px}#hint{margin-left:auto;color:#aeb9ca;white-space:nowrap}#stage{display:block;flex:1;min-height:0;width:100%;cursor:crosshair}#status{position:fixed;left:14px;bottom:12px;padding:7px 10px;background:#151b25e8;border:1px solid #303848;border-radius:7px;color:#c7d0de;pointer-events:none}
+    @media(max-width:950px){#bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:6px}#bar>*{min-width:0;text-align:center;justify-content:center}strong,#hint{grid-column:1/-1;margin:0}#hint{white-space:normal}.field{justify-content:flex-start}input[type=text]{width:100px}}
+  </style>
+</head>
+<body>
+  <div id="bar">
+    <strong>Desenhar áreas e cômodos</strong>
+    <button id="add">Novo cômodo</button><button id="finish">Fechar polígono</button><button id="undoPoint">Desfazer ponto</button><button id="remove">Apagar cômodo</button>
+    <span class="field">Nome <input id="name" type="text" list="gatherRooms" placeholder="Ex.: SALA DE ESTUDO" /><datalist id="gatherRooms"><option value="LOBBY"><option value="MEDIA ROOM"><option value="GREEN LIBRARY"><option value="TEAM"><option value="CENTRAL COUCHES"><option value="KOI POND"><option value="STUDY HUDDLE"><option value="COFFEE HUDDLE"><option value="DATA HUDDLE"><option value="LOBBY COUCHES"></datalist></span>
+    <label><input id="closed" type="checkbox" /> isolar voz neste cômodo</label>
+    <button id="zoomIn">Zoom +</button><button id="zoomOut">Zoom −</button><button id="fit">Ver mapa todo</button>
+    <button id="save">Baixar room-areas.json</button>
+    <span id="hint">Novo cômodo → clique nos cantos → Fechar polígono · arraste os vértices para ajustar</span>
+  </div>
+  <canvas id="stage"></canvas><div id="status">Carregando mapa…</div>
+  <script>
+    const canvas=document.querySelector('#stage'),ctx=canvas.getContext('2d'),status=document.querySelector('#status'),image=new Image();
+    const state={scale:.5,x:0,y:0,areas:[],selected:-1,drawing:false,drag:null,pan:null,hover:null};let fileData={image:{width:2176,height:1696},areas:[]};
+    const colors=['#4ce0a1','#58a6ff','#ffb547','#e879f9','#fb7185','#2dd4bf','#facc15','#a78bfa','#f97316','#34d399'];
+    function fit(){const d=devicePixelRatio||1;canvas.width=Math.floor(canvas.clientWidth*d);canvas.height=Math.floor(canvas.clientHeight*d);ctx.setTransform(d,0,0,d,0,0);if(image.complete){state.scale=Math.min(canvas.clientWidth/image.width,canvas.clientHeight/image.height)*.92;state.x=(canvas.clientWidth-image.width*state.scale)/2;state.y=(canvas.clientHeight-image.height*state.scale)/2;}draw();}
+    function toMap(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left-state.x)/state.scale,y:(e.clientY-r.top-state.y)/state.scale};}
+    function zoom(f,cx=canvas.clientWidth/2,cy=canvas.clientHeight/2){const old=state.scale;state.scale=Math.max(.15,Math.min(24,old*f));state.x=cx-(cx-state.x)*state.scale/old;state.y=cy-(cy-state.y)*state.scale/old;draw();updateStatus();}
+    function polygonCenter(points){return points.reduce((a,p)=>({x:a.x+p[0]/points.length,y:a.y+p[1]/points.length}),{x:0,y:0});}
+    function pointInPoly(p,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a[1]>p.y)!==(b[1]>p.y))&&(p.x<(b[0]-a[0])*(p.y-a[1])/(b[1]-a[1])+a[0]))inside=!inside;}return inside;}
+    function draw(){if(!image.complete)return;ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);ctx.imageSmoothingEnabled=false;ctx.drawImage(image,state.x,state.y,image.width*state.scale,image.height*state.scale);
+      state.areas.forEach((a,i)=>{const col=colors[i%colors.length],p=a.polygon||[];if(p.length>=2){ctx.beginPath();p.forEach((q,j)=>{const x=state.x+q[0]*state.scale,y=state.y+q[1]*state.scale;j?ctx.lineTo(x,y):ctx.moveTo(x,y)});if(!state.drawing||i!==state.selected){ctx.closePath();ctx.fillStyle=col+'3d';ctx.fill();}ctx.strokeStyle=col;ctx.lineWidth=i===state.selected?3:2;ctx.stroke();const c=polygonCenter(p);ctx.fillStyle='#10141cdd';ctx.font=`bold ${Math.max(10,13*state.scale)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';const label=a.name||`Cômodo ${i+1}`;const w=ctx.measureText(label).width+12;ctx.fillRect(state.x+c.x*state.scale-w/2,state.y+c.y*state.scale-10,w,20);ctx.fillStyle='#fff';ctx.fillText(label,state.x+c.x*state.scale,state.y+c.y*state.scale);}
+        p.forEach((q,j)=>{const x=state.x+q[0]*state.scale,y=state.y+q[1]*state.scale;ctx.beginPath();ctx.arc(x,y,i===state.selected?5:3.5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#10141c';ctx.lineWidth=1.5;ctx.stroke();if(i===state.selected){ctx.fillStyle='#fff';ctx.font=`${Math.max(9,10*state.scale)}px system-ui`;ctx.fillText(String(j+1),x+7,y-7);}});
+      });if(state.drawing&&state.selected>=0&&state.hover){const a=state.areas[state.selected],p=a.polygon;if(p.length){ctx.beginPath();p.forEach((q,j)=>{const x=state.x+q[0]*state.scale,y=state.y+q[1]*state.scale;j?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.lineTo(state.x+state.hover.x*state.scale,state.y+state.hover.y*state.scale);ctx.strokeStyle=colors[state.selected%colors.length];ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);}}}
+    function updateStatus(){if(state.selected>=0){const a=state.areas[state.selected];status.textContent=`${state.areas.length} cômodos · selecionado: ${a.name||'sem nome'} · ${a.polygon.length} pontos${a.isolateVoice?' · voz isolada':''}`;}else status.textContent=`${state.areas.length} cômodos · escala ${state.scale.toFixed(2)}×`;}
+    function syncForm(){const a=state.areas[state.selected];document.querySelector('#name').value=a?.name||'';document.querySelector('#closed').checked=!!a?.isolateVoice;}
+    function findArea(point){for(let i=state.areas.length-1;i>=0;i--)if(state.areas[i].polygon.length>=3&&pointInPoly(point,state.areas[i].polygon))return i;return-1;}
+    document.querySelector('#add').addEventListener('click',()=>{const i=state.areas.length;state.areas.push({id:`area-${Date.now()}-${i}`,name:`Cômodo ${i+1}`,closed:false,polygon:[]});state.selected=i;state.drawing=true;syncForm();draw();updateStatus();});
+    document.querySelector('#finish').addEventListener('click',()=>{if(state.selected<0||state.areas[state.selected].polygon.length<3){status.textContent='Marque pelo menos três cantos para fechar o cômodo';return;}state.drawing=false;draw();updateStatus();});
+    document.querySelector('#undoPoint').addEventListener('click',()=>{if(state.selected>=0&&state.drawing){state.areas[state.selected].polygon.pop();draw();updateStatus();}});
+    document.querySelector('#remove').addEventListener('click',()=>{if(state.selected<0)return;state.areas.splice(state.selected,1);state.selected=-1;state.drawing=false;syncForm();draw();updateStatus();});
+    document.querySelector('#name').addEventListener('input',e=>{if(state.selected>=0){state.areas[state.selected].name=e.target.value;draw();updateStatus();}});
+    document.querySelector('#closed').addEventListener('change',e=>{if(state.selected>=0){state.areas[state.selected].isolateVoice=e.target.checked;draw();updateStatus();}});
+    document.querySelector('#zoomIn').addEventListener('click',()=>zoom(1.6));document.querySelector('#zoomOut').addEventListener('click',()=>zoom(1/1.6));document.querySelector('#fit').addEventListener('click',fit);
+    canvas.addEventListener('pointerdown',e=>{if(e.button===1||(e.shiftKey&&e.button===0)||(e.button===2)){state.pan={x:e.clientX,y:e.clientY,sx:state.x,sy:state.y};canvas.setPointerCapture(e.pointerId);return;}const p=toMap(e);if(state.drawing&&state.selected>=0){state.areas[state.selected].polygon.push([Math.round(p.x),Math.round(p.y)]);draw();updateStatus();canvas.setPointerCapture(e.pointerId);return;}const i=findArea(p);state.selected=i;state.drawing=false;syncForm();if(i>=0){const poly=state.areas[i].polygon;let best=14/state.scale;for(let j=0;j<poly.length;j++){const d=Math.hypot(p.x-poly[j][0],p.y-poly[j][1]);if(d<best){best=d;state.drag={area:i,vertex:j};}}if(!state.drag){state.drag={area:i,move:true,last:p};}canvas.setPointerCapture(e.pointerId);}draw();updateStatus();});
+    canvas.addEventListener('pointermove',e=>{state.hover=toMap(e);if(state.pan){state.x=state.pan.sx+e.clientX-state.pan.x;state.y=state.pan.sy+e.clientY-state.pan.y;draw();return;}if(state.drag){const p=toMap(e),a=state.areas[state.drag.area];if(state.drag.move){const dx=p.x-state.drag.last.x,dy=p.y-state.drag.last.y;a.polygon=a.polygon.map(q=>[Math.round(q[0]+dx),Math.round(q[1]+dy)]);state.drag.last=p;}else a.polygon[state.drag.vertex]=[Math.max(0,Math.min(image.width-1,Math.round(p.x))),Math.max(0,Math.min(image.height-1,Math.round(p.y)))];draw();return;}draw();});
+    canvas.addEventListener('pointerup',()=>{state.drag=null;state.pan=null;});canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('wheel',e=>{e.preventDefault();const r=canvas.getBoundingClientRect();zoom(e.deltaY<0?1.12:.89,e.clientX-r.left,e.clientY-r.top);},{passive:false});
+    function exportData(){return{image:fileData.image,areas:state.areas.map(a=>({id:a.id,name:a.name,isolateVoice:!!a.isolateVoice,polygon:a.polygon.map(p=>[Math.round(p[0]),Math.round(p[1])])}))};}
+    document.querySelector('#save').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(exportData(),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='room-areas.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
+    async function load(){try{const r=await fetch('/assets/map/room-areas.json');if(r.ok){fileData=await r.json();state.areas=(fileData.areas||[]).map(a=>({...a,polygon:a.polygon||[]}));}}catch{}fit();updateStatus();}
+    image.onload=load;image.onerror=()=>status.textContent='Não carregou o mapa. Abra esta página pelo servidor localhost:5173.';image.src='/assets/map/gather-map.png';window.addEventListener('resize',fit);
+  </script>
+</body>
+</html>
