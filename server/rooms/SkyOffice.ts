@@ -29,6 +29,7 @@ export class SkyOffice extends Room<OfficeState> {
   private meetingWalkInvites = new Map<string, { fromId: string; expiresAt: number }>()
   private meetingCalls = new Map<string, { fromId: string; roomId: string; roomName: string; timer: ReturnType<typeof setTimeout> }>()
   private generalChatHistory: Array<{
+    messageId: string
     channel: 'general'
     senderId: string
     senderName: string
@@ -36,6 +37,7 @@ export class SkyOffice extends Room<OfficeState> {
     attachment?: { name: string; mimeType: string; data: string }
     sentAt: number
   }> = []
+  private generalChatSequence = 0
   private chatClearTimer?: ReturnType<typeof setTimeout>
   private configuredAutoDispose = true
 
@@ -395,7 +397,11 @@ export class SkyOffice extends Room<OfficeState> {
         // Keep the room available after everyone leaves so a later participant
         // can still receive today's general chat history.
         this.autoDispose = false
-        const generalPayload = { ...payload, channel: 'general' as const }
+        const generalPayload = {
+          ...payload,
+          channel: 'general' as const,
+          messageId: `${payload.sentAt}-${++this.generalChatSequence}`,
+        }
         this.generalChatHistory.push(generalPayload)
         this.clients.forEach((recipient) => recipient.send(Message.ADD_CHAT_MESSAGE, generalPayload))
         return
@@ -433,6 +439,10 @@ export class SkyOffice extends Room<OfficeState> {
     this.onMessage(Message.REQUEST_CHAT_HISTORY, (client) => {
       if (!this.state.players.has(client.sessionId)) return
       this.generalChatHistory.forEach((message) => client.send(Message.ADD_CHAT_MESSAGE, { ...message, history: true }))
+    })
+
+    this.onMessage(Message.CONNECTION_HEARTBEAT, (client) => {
+      client.send(Message.CONNECTION_HEARTBEAT_ACK)
     })
 
     this.onMessage(Message.MEETING_CHAT_MESSAGE, (client, message: { roomId?: string; content?: string; attachment?: { name?: string; mimeType?: string; data?: string } }) => {
@@ -689,7 +699,9 @@ export class SkyOffice extends Room<OfficeState> {
 
     if (!consented) {
       try {
-        await this.allowReconnection(client, 20)
+        // Give background tabs and brief network interruptions enough time to
+        // resume and reclaim the existing Colyseus session.
+        await this.allowReconnection(client, 60)
         if (savedPlayer) {
           const restoredPlayer = Object.assign(new Player(), savedPlayer)
           this.state.players.set(client.sessionId, restoredPlayer)

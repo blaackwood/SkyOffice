@@ -7,7 +7,7 @@
     "start": "cd server && ts-node-dev --project tsconfig.server.json --respawn --transpile-only index.ts",
     "heroku-postbuild": "yarn && cd types && yarn && cd ../server && tsc --project tsconfig.server.json",
     "test": "ts-node --project server/tsconfig.server.json server/tests/validation.test.ts",
-    "lint": "eslint client/src/components/RankEstudosDialog.tsx client/src/components/Chat.tsx client/src/components/PreferencesDialog.tsx client/src/components/BottomBar.tsx client/src/services/Network.ts client/src/stores/ChatStore.ts server/rooms/SkyOffice.ts server/rooms/MeetingRoomSelection.ts server/tests/validation.test.ts types/DailyChatSchedule.ts"
+    "lint": "eslint client/src/components/RankEstudosDialog.tsx client/src/components/Chat.tsx client/src/components/PreferencesDialog.tsx client/src/components/BottomBar.tsx client/src/services/Network.ts client/src/web/WebRTC.ts client/src/stores/ChatStore.ts server/rooms/SkyOffice.ts server/rooms/MeetingRoomSelection.ts server/tests/validation.test.ts types/DailyChatSchedule.ts types/Messages.ts"
   },
   "repository": {
     "type": "git",

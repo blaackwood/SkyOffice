@@ -32,12 +32,20 @@ import { brasiliaChatClearCycleKey, millisecondsUntilBrasiliaChatClear, shouldCl
 export default class Network {
   private client: Client
   private room?: Room<IOfficeState>
-  private lobby!: Room
+  private lobby?: Room
+  private reconnectTarget: { kind: 'public' } | { kind: 'custom'; roomId: string; password: string | null } = { kind: 'public' }
   webRTC?: WebRTC
 
   mySessionId!: string
   private reconnecting = false
+  private connectionHeartbeatTimer?: number
+  private connectionHeartbeatTimeout?: number
   private chatClearTimer?: number
+  private lastPlayerUpdate?: { x: number; y: number; anim: string }
+  private lastPlayerTint?: number
+  private lastPlayerStatus?: 'active' | 'busy' | 'away'
+  private lastMicrophoneEnabled?: boolean
+  private lastCameraEnabled?: boolean
   private lastBrasiliaChatClearDay = brasiliaChatClearCycleKey(Date.now())
   private meetingRoomLocks = new Map<string, boolean>()
   private stopCallRingtone?: () => void
@@ -53,9 +61,7 @@ export default class Network {
         ? import.meta.env.VITE_SERVER_URL
         : `${protocol}//${window.location.hostname}:2567`
     this.client = new Client(endpoint)
-    this.joinLobbyRoom().then(() => {
-      store.dispatch(setLobbyJoined(true))
-    })
+    void this.joinLobbyRoom()
 
     phaserEvents.on(Event.MY_PLAYER_NAME_CHANGE, this.updatePlayerName, this)
     phaserEvents.on(Event.MY_PLAYER_TEXTURE_CHANGE, this.updatePlayer, this)
@@ -86,6 +92,7 @@ export default class Network {
     if (document.visibilityState !== 'visible') return
     this.clearChatIfBrasiliaDayChanged()
     this.scheduleDailyChatClear()
+    this.sendConnectionHeartbeat()
   }
 
   /**
@@ -93,29 +100,71 @@ export default class Network {
    * connected clients whenever rooms with "realtime listing" have updates
    */
   async joinLobbyRoom() {
-    this.lobby = await this.client.joinOrCreate(RoomType.LOBBY)
+    let attempt = 0
+    while (!this.room) {
+      if (!navigator.onLine) {
+        await new Promise<void>((resolve) => {
+          const handleOnline = () => {
+            window.removeEventListener('online', handleOnline)
+            resolve()
+          }
+          window.addEventListener('online', handleOnline, { once: true })
+          if (navigator.onLine) handleOnline()
+        })
+      }
 
-    this.lobby.onMessage('rooms', (rooms) => {
-      store.dispatch(setAvailableRooms(rooms))
-    })
+      try {
+        const lobby = await this.client.joinOrCreate(RoomType.LOBBY)
+        // The player may have joined the main room while matchmaking was
+        // waiting for a sleeping server to wake up.
+        if (this.room) {
+          lobby.leave()
+          return
+        }
 
-    this.lobby.onMessage('+', ([roomId, room]) => {
-      store.dispatch(addAvailableRooms({ roomId, room }))
-    })
+        this.lobby = lobby
+        lobby.onMessage('rooms', (rooms) => {
+          store.dispatch(setAvailableRooms(rooms))
+        })
 
-    this.lobby.onMessage('-', (roomId) => {
-      store.dispatch(removeAvailableRooms(roomId))
-    })
+        lobby.onMessage('+', ([roomId, room]) => {
+          store.dispatch(addAvailableRooms({ roomId, room }))
+        })
+
+        lobby.onMessage('-', (roomId) => {
+          store.dispatch(removeAvailableRooms(roomId))
+        })
+
+        lobby.onLeave((code) => {
+          if (code === 4000 || this.room) return
+          this.lobby = undefined
+          store.dispatch(setLobbyJoined(false))
+          void this.joinLobbyRoom()
+        })
+
+        attempt = 0
+        store.dispatch(setLobbyJoined(true))
+        return
+      } catch {
+        attempt += 1
+        store.dispatch(setLobbyJoined(false))
+        const delay = Math.min(1000 * (2 ** Math.min(attempt - 1, 4)), 15_000)
+        const jitteredDelay = Math.round(delay * (0.8 + Math.random() * 0.4))
+        await new Promise((resolve) => window.setTimeout(resolve, jitteredDelay))
+      }
+    }
   }
 
   // method to join the public lobby
   async joinOrCreatePublic() {
+    this.reconnectTarget = { kind: 'public' }
     this.room = await this.client.joinOrCreate(RoomType.PUBLIC)
     this.initialize()
   }
 
   // method to join a custom room
   async joinCustomById(roomId: string, password: string | null) {
+    this.reconnectTarget = { kind: 'custom', roomId, password }
     this.room = await this.client.joinById(roomId, { password })
     this.initialize()
   }
@@ -129,6 +178,7 @@ export default class Network {
       password,
       autoDispose,
     })
+    this.reconnectTarget = { kind: 'custom', roomId: this.room.id, password }
     this.initialize()
   }
 
@@ -136,11 +186,19 @@ export default class Network {
   initialize(isReconnection = false) {
     if (!this.room) return
 
-    if (!isReconnection) this.lobby.leave()
+    if (!isReconnection && this.lobby) {
+      const lobby = this.lobby
+      this.lobby = undefined
+      store.dispatch(setLobbyJoined(false))
+      lobby.leave()
+    }
     this.mySessionId = this.room.sessionId
     store.dispatch(setSessionId(this.room.sessionId))
     if (!this.webRTC) this.webRTC = new WebRTC(this.mySessionId, this)
     store.dispatch(setConnectionStatus('connected'))
+    if (this.connectionHeartbeatTimeout) window.clearTimeout(this.connectionHeartbeatTimeout)
+    this.connectionHeartbeatTimeout = undefined
+    this.startConnectionHeartbeat()
 
     const activeRoom = this.room
     activeRoom.onLeave((code) => {
@@ -257,6 +315,7 @@ export default class Network {
 
     // when a user sends a message
     this.room.onMessage(Message.ADD_CHAT_MESSAGE, (message: {
+      messageId?: string
       channel?: 'general' | 'direct' | 'nearby'
       clientId?: string
       senderId?: string
@@ -281,7 +340,7 @@ export default class Network {
         : undefined
       const conversationId = message.channel === 'general' ? 'general' : `dm:${peerId || ''}`
       store.dispatch(pushConversationMessage({
-        id: `${message.sentAt ?? Date.now()}:${message.senderId}:${Math.random()}`,
+        id: message.messageId || `${message.sentAt ?? Date.now()}:${message.senderId}:${Math.random()}`,
         channel: message.channel,
         conversationId,
         senderId: message.senderId || '',
@@ -305,6 +364,14 @@ export default class Network {
       this.lastBrasiliaChatClearDay = brasiliaChatClearCycleKey(Date.now())
       store.dispatch(clearDailyChat())
     })
+
+    this.room.onMessage(Message.CONNECTION_HEARTBEAT_ACK, () => {
+      if (this.connectionHeartbeatTimeout) window.clearTimeout(this.connectionHeartbeatTimeout)
+      this.connectionHeartbeatTimeout = undefined
+    })
+    // Check the socket right away so a half-open connection is detected
+    // promptly, then keep checking every three minutes in the background.
+    this.sendConnectionHeartbeat()
 
     // Ask after installing listeners so the room can safely replay the history.
     this.room.send(Message.REQUEST_CHAT_HISTORY)
@@ -431,24 +498,83 @@ export default class Network {
     store.dispatch(setConnectionStatus('reconnecting'))
 
     try {
-      const delays = [300, 600, 900, 1200, 1500, 2000, 2500]
-      for (const delay of delays) {
+      let attempt = 0
+      while (this.reconnecting) {
         if (!navigator.onLine) {
-          await new Promise((resolve) => window.setTimeout(resolve, delay))
+          await new Promise<void>((resolve) => {
+            const handleOnline = () => {
+              window.removeEventListener('online', handleOnline)
+              resolve()
+            }
+            window.addEventListener('online', handleOnline, { once: true })
+            // Recheck after subscribing so a fast network recovery cannot be
+            // missed between the initial check and listener registration.
+            if (navigator.onLine) handleOnline()
+          })
           continue
         }
+
         try {
           this.room = await this.client.reconnect(roomId, sessionId)
-          this.reconnecting = false
           this.initialize(true)
           return
         } catch {
-          await new Promise((resolve) => window.setTimeout(resolve, delay))
+          attempt += 1
         }
+
+        // If Render restarted the instance, the old session may no longer
+        // exist. Rejoin with a fresh session while continuing to retry.
+        if (attempt >= 3) {
+          try {
+            this.room = this.reconnectTarget.kind === 'public'
+              ? await this.client.joinOrCreate(RoomType.PUBLIC)
+              : await this.client.joinById(this.reconnectTarget.roomId, { password: this.reconnectTarget.password })
+            this.initialize(true)
+            this.webRTC?.reconnectAs(this.mySessionId)
+            this.restorePlayerAfterFreshJoin()
+            return
+          } catch {
+            attempt += 1
+          }
+        }
+
+        const delay = Math.min(1000 * (2 ** Math.min(attempt - 1, 4)), 15_000)
+        const jitteredDelay = Math.round(delay * (0.8 + Math.random() * 0.4))
+        await new Promise((resolve) => window.setTimeout(resolve, jitteredDelay))
       }
-      store.dispatch(setConnectionStatus('disconnected'))
     } finally {
       this.reconnecting = false
+    }
+  }
+
+  private startConnectionHeartbeat() {
+    if (this.connectionHeartbeatTimer) window.clearInterval(this.connectionHeartbeatTimer)
+    this.connectionHeartbeatTimer = window.setInterval(() => this.sendConnectionHeartbeat(), 3 * 60 * 1000)
+  }
+
+  private sendConnectionHeartbeat() {
+    if (!this.room || this.reconnecting || this.connectionHeartbeatTimeout) return
+    this.room.send(Message.CONNECTION_HEARTBEAT)
+    this.connectionHeartbeatTimeout = window.setTimeout(() => {
+      this.connectionHeartbeatTimeout = undefined
+      if (this.room && !this.reconnecting) void this.reconnectRoom(this.room.id, this.room.sessionId)
+    }, 20_000)
+  }
+
+  private restorePlayerAfterFreshJoin() {
+    const { user } = store.getState()
+    if (user.myPlayerName) this.updatePlayerName(user.myPlayerName)
+    if (this.lastPlayerUpdate) {
+      const { x, y, anim } = this.lastPlayerUpdate
+      this.updatePlayer(x, y, anim)
+    }
+    if (this.lastPlayerTint !== undefined) this.updatePlayerTint(this.lastPlayerTint)
+    if (this.lastPlayerStatus) this.updatePlayerStatus(this.lastPlayerStatus)
+    if (this.lastMicrophoneEnabled !== undefined) this.updateMicrophoneState(this.lastMicrophoneEnabled)
+    if (this.lastCameraEnabled !== undefined) this.updateCameraState(this.lastCameraEnabled)
+    if (user.loggedIn) {
+      this.readyToConnect()
+      if (user.videoConnected) this.videoConnected()
     }
   }
 
@@ -485,6 +611,7 @@ export default class Network {
 
   // method to send player updates to Colyseus server
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {
+    this.lastPlayerUpdate = { x: currentX, y: currentY, anim: currentAnim }
     this.room?.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
   }
 
@@ -498,6 +625,7 @@ export default class Network {
   }
 
   updatePlayerTint(tint: number) {
+    this.lastPlayerTint = tint
     this.room?.send(Message.UPDATE_PLAYER_TINT, { tint })
   }
 
@@ -545,14 +673,17 @@ export default class Network {
   }
 
   updatePlayerStatus(status: 'active' | 'busy' | 'away') {
+    this.lastPlayerStatus = status
     this.room?.send(Message.UPDATE_PLAYER_STATUS, { status })
   }
 
   updateCameraState(enabled: boolean) {
+    this.lastCameraEnabled = enabled
     this.room?.send(Message.UPDATE_CAMERA_STATE, { enabled })
   }
 
   updateMicrophoneState(enabled: boolean) {
+    this.lastMicrophoneEnabled = enabled
     this.room?.send(Message.UPDATE_MICROPHONE_STATE, { enabled })
     phaserEvents.emit(Event.MY_PLAYER_MIC_STATE_CHANGE, enabled)
   }

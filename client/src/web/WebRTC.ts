@@ -35,10 +35,12 @@ export default class WebRTC {
     lastVoiceAt: number
   }>()
   private voiceMeterInterval?: number
+  private boundUserId: string
 
   constructor(userId: string, network: Network) {
     const sanitizedId = this.replaceInvalidId(userId)
     this.myPeer = new Peer(sanitizedId)
+    this.boundUserId = userId
     this.network = network
     this.videoGrid = document.querySelector<HTMLElement>('.video-grid') ?? document.createElement('div')
     this.videoGrid.classList.add('video-grid')
@@ -111,6 +113,28 @@ export default class WebRTC {
       if (alertOnError) window.alert('Microphone unavailable or permission was denied')
       return false
     }
+  }
+
+  reconnectAs(userId: string) {
+    if (this.boundUserId === userId) return
+    this.stopVoiceActivity(this.boundUserId)
+    this.peers.forEach(({ call, video }) => {
+      call.close()
+      video.remove()
+    })
+    this.peers.clear()
+    this.onCalledPeers.forEach(({ call, video }) => {
+      call.close()
+      video.remove()
+    })
+    this.onCalledPeers.clear()
+    if (!this.myPeer.destroyed) this.myPeer.destroy()
+    this.myPeer = new Peer(this.replaceInvalidId(userId))
+    this.myPeer.on('error', (error) => console.error(error))
+    this.boundUserId = userId
+    this.initialize()
+    this.setCameraEnabled(userId, this.cameraEnabled)
+    if (this.myStream) this.watchVoiceActivity(userId, this.myStream)
   }
 
   async getCameraMedia(deviceId?: string): Promise<boolean> {

@@ -40,7 +40,9 @@ export const chatSlice = createSlice({
       state.selectedConversation = action.payload
     },
     pushConversationMessage: (state, action: PayloadAction<ConversationMessage>) => {
-      state.messages.push(action.payload)
+      if (!state.messages.some((message) => message.id === action.payload.id)) {
+        state.messages.push(action.payload)
+      }
     },
     incrementUnread: (state, action: PayloadAction<string>) => {
       const conversationId = action.payload
