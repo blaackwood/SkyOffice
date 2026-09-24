@@ -1,5 +1,5 @@
 [build]
-  command = "cd client && npm ci && npm run build"
+  command = "cd client && npm ci --legacy-peer-deps && npm run build"
   publish = "client/dist"
 
 # Rule for router history mode
