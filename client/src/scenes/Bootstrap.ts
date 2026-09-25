@@ -3,6 +3,7 @@ import Network from '../services/Network'
 import { BackgroundMode } from '../../../types/BackgroundMode'
 import store from '../stores'
 import { setRoomJoined } from '../stores/RoomStore'
+import { DESK_DECORATION_ASSETS } from '../../../types/Desk'
 
 export default class Bootstrap extends Phaser.Scene {
   private preloadComplete = false
@@ -58,6 +59,7 @@ export default class Bootstrap extends Phaser.Scene {
       frameWidth: 64,
       frameHeight: 48,
     })
+    DESK_DECORATION_ASSETS.forEach((asset) => this.load.image(asset.texture, asset.path.replace(/^\//, '')))
     this.load.spritesheet('office', 'assets/tileset/Modern_Office_Black_Shadow.png', {
       frameWidth: 32,
       frameHeight: 32,

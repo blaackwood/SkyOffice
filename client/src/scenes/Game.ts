@@ -15,12 +15,14 @@ import MyPlayer from '../characters/MyPlayer'
 import OtherPlayer from '../characters/OtherPlayer'
 import PlayerSelector from '../characters/PlayerSelector'
 import Network from '../services/Network'
+import { loadSavedPlayerPosition } from '../services/PlayerPosition'
 import type { SavedDeskDecoration } from '../services/DeskLayout'
 import { IPlayer } from '../../../types/IOfficeState'
 import { PlayerBehavior } from '../../../types/PlayerBehavior'
 import { ItemType } from '../../../types/Items'
 import { DESK_SLOTS } from '../../../types/Desk'
-import type { DeskDecorationAsset, IDeskDecoration } from '../../../types/Desk'
+import { DESK_DECORATION_ASSETS, type DeskDecorationAsset, type IDeskDecoration } from '../../../types/Desk'
+import { fetchLiveStudySessions, type LiveStudySession } from '../services/RankEstudosLive'
 
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
@@ -28,6 +30,16 @@ import { Event, phaserEvents } from '../events/EventCenter'
 import type { MeetingRoomParticipant, MeetingRoomPresence } from '../events/EventCenter'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
 import { loadRoomDoorLayout, ROOM_DOOR_LAYOUT_STORAGE_KEY, type RoomDoorPlacement } from '../services/RoomDoorLayout'
+
+interface StudyDeskStation {
+  slot: typeof DESK_SLOTS[number]
+  chair: Chair
+  glow: Phaser.GameObjects.Graphics
+  lamp: Phaser.GameObjects.Graphics
+  label: Phaser.GameObjects.Text
+}
+
+const normalizeStudyName = (name: string) => name.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase()
 
 export default class Game extends Phaser.Scene {
   network!: Network
@@ -43,21 +55,29 @@ export default class Game extends Phaser.Scene {
   computerMap = new Map<string, Computer>()
   private whiteboardMap = new Map<string, Whiteboard>()
   private isCameraDragging = false
+  private wasCameraDragging = false
   private isCameraDragPending = false
   private pointerOnOtherPlayer = false
+  // Kept as a switch so click-to-walk can be re-enabled later without
+  // deleting the existing movement implementation.
+  private clickToWalkEnabled = false
   private isFollowingPlayer = false
   private dragStartX = 0
   private dragStartY = 0
   private cameraStartX = 0
   private cameraStartY = 0
   private deskEditorMode = false
+  private draggingDeskDecoration = false
   private selectedDeskDecoration?: DeskDecorationAsset
-  private deskDecorationObjects = new Map<string, Phaser.GameObjects.Sprite>()
+  private deskCatalogDragInProgress = false
+  private deskDecorationObjects = new Map<string, Phaser.GameObjects.Sprite | Phaser.GameObjects.Image>()
+  private deskDecorationShadows = new Map<string, Phaser.GameObjects.Ellipse>()
   private deskDecorationOwners = new Map<string, string>()
   private selectedDeskDecorationId?: string
   private deskHoverLabel?: Phaser.GameObjects.Text
   private deskHoverLabelBackground?: Phaser.GameObjects.Graphics
   private deskHoverHighlight?: Phaser.GameObjects.Graphics
+  private deskEditorTargetHighlight?: Phaser.GameObjects.Graphics
   private deskUndoStack: SavedDeskDecoration[][] = []
   private deskRedoStack: SavedDeskDecoration[][] = []
   private roomAreas: {
@@ -87,6 +107,12 @@ export default class Game extends Phaser.Scene {
   private lastMeetingPresenceSignature = 'uninitialized'
   private activeMeetingRoomId?: string
   private pendingMeetingChair?: Chair
+  private studyDeskStations: StudyDeskStation[] = []
+  private liveStudySessions: LiveStudySession[] = []
+  private studyPresenceBadges = new Map<string, Phaser.GameObjects.Text>()
+  private studyPresenceTimer?: number
+  private lastStudyVisualUpdate = 0
+  private studySessionPollInFlight = false
 
   constructor() {
     super('game')
@@ -169,6 +195,8 @@ export default class Game extends Phaser.Scene {
       }))
     phaserEvents.on(Event.MEETING_ROOM_LOCK_CHANGED, this.handleMeetingRoomLockChanged, this)
     phaserEvents.on(Event.MEETING_WALK_STARTED, this.handleMeetingWalkStarted, this)
+    phaserEvents.on(Event.STUDY_SESSION_STARTED, this.handleStudySessionStarted, this)
+    phaserEvents.on(Event.STUDY_SESSIONS_REFRESH, this.refreshLiveStudyMap, this)
     this.loadRoomDoors()
     window.addEventListener('storage', this.handleDoorLayoutStorage)
 
@@ -207,6 +235,14 @@ export default class Game extends Phaser.Scene {
       this.roomDoors.clear()
       phaserEvents.off(Event.MEETING_ROOM_LOCK_CHANGED, this.handleMeetingRoomLockChanged, this)
       phaserEvents.off(Event.MEETING_WALK_STARTED, this.handleMeetingWalkStarted, this)
+      phaserEvents.off(Event.STUDY_SESSION_STARTED, this.handleStudySessionStarted, this)
+      phaserEvents.off(Event.STUDY_SESSIONS_REFRESH, this.refreshLiveStudyMap, this)
+      if (this.studyPresenceTimer) window.clearInterval(this.studyPresenceTimer)
+      this.studyPresenceTimer = undefined
+      this.studyDeskStations.forEach(({ glow, lamp, label }) => { glow.destroy(); lamp.destroy(); label.destroy() })
+      this.studyDeskStations = []
+      this.studyPresenceBadges.forEach((badge) => badge.destroy())
+      this.studyPresenceBadges.clear()
       this.roomFocusOverlay = undefined
       this.roomFocusMask = undefined
       this.roomFocusMaskShape = undefined
@@ -219,7 +255,8 @@ export default class Game extends Phaser.Scene {
     this.roomHoverLabel = document.createElement('div')
     Object.assign(this.roomHoverLabel.style, {
       position: 'fixed',
-      zIndex: '10000',
+      // Keep map hover labels above the map but below the bottom bar and UI popovers.
+      zIndex: '29',
       display: 'none',
       pointerEvents: 'none',
       transform: 'translateX(-50%)',
@@ -239,7 +276,10 @@ export default class Game extends Phaser.Scene {
         this.pointerOnOtherPlayer = false
         return
       }
-      if (event.button !== 0 || this.deskEditorMode || this.isCameraDragging) return
+      if (event.button !== 0 || this.deskEditorMode || this.isCameraDragging || this.wasCameraDragging) return
+      // Clicking the map to walk is temporarily disabled. Keyboard movement,
+      // meeting actions and the existing walkToPosition implementation remain.
+      if (!this.clickToWalkEnabled) return
       const rect = gameCanvas.getBoundingClientRect()
       if (!rect.width || !rect.height) return
       const screenX = ((event.clientX - rect.left) / rect.width) * this.scale.width
@@ -304,11 +344,21 @@ export default class Game extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, mapWidth, mapHeight)
     this.cameras.main.setBounds(0, 0, mapWidth, mapHeight)
 
-    this.myPlayer = this.add.myPlayer(1088, 1024, 'adam', this.network.mySessionId)
+    const playerName = store.getState().user.myPlayerName || sessionStorage.getItem('skyoffice.pendingPlayerName') || ''
+    const savedPosition = loadSavedPlayerPosition(playerName, mapWidth, mapHeight)
+    const spawn = savedPosition
+      ? this.findWalkableSpawnNear(savedPosition.x, savedPosition.y, mapWidth, mapHeight)
+      : undefined
+    const spawnX = spawn?.x ?? 1088
+    const spawnY = spawn?.y ?? 1024
+    this.myPlayer = this.add.myPlayer(spawnX, spawnY, 'adam', this.network.mySessionId)
     this.myPlayer.setCollideWorldBounds(true)
     ;(this.myPlayer.playerContainer.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true)
     this.playerSelector = new PlayerSelector(this, 0, 0, 16, 16)
     this.myPlayer.standFinder = (chair) => this.findStandSpot(chair)
+    const savePlayerPosition = () => this.network.saveLastPlayerPosition(this.myPlayer.x, this.myPlayer.y)
+    window.addEventListener('pagehide', savePlayerPosition)
+    this.events.once('shutdown', () => window.removeEventListener('pagehide', savePlayerPosition))
     this.roomDoors.forEach((door) => {
       door.collider = this.physics.add.collider([this.myPlayer, this.myPlayer.playerContainer], door.blocker)
     })
@@ -349,6 +399,10 @@ export default class Game extends Phaser.Scene {
 
       this.seatItems.push(item)
     })
+
+    this.createStudyDeskStations()
+    void this.refreshLiveStudyMap()
+    this.studyPresenceTimer = window.setInterval(() => { void this.refreshLiveStudyMap() }, 15000)
 
     // Debug: open the game with ?debugSeats in the URL (e.g. http://localhost:5173/?debugSeats)
     // to see every seat's index in seat-map.json (white label), the seat point (red dot) and
@@ -410,9 +464,10 @@ export default class Game extends Phaser.Scene {
 
     this.otherPlayers = this.physics.add.group({ classType: OtherPlayer })
 
-    const fitZoom = Math.min(this.scale.width / mapWidth, this.scale.height / mapHeight) * 0.94
-    // Start at a useful close view instead of shrinking the whole office to fit.
-    this.cameras.main.zoom = Phaser.Math.Clamp(Math.max(fitZoom, 0.5), 0.1, 1)
+    // Start with the map covering the viewport so the decorative cloud backdrop
+    // cannot peek around the office. This uses a cover fit, not a contain fit.
+    const coverZoom = Math.max(this.scale.width / mapWidth, this.scale.height / mapHeight) * 1.02
+    this.cameras.main.zoom = Phaser.Math.Clamp(coverZoom, 0.1, 3)
     this.cameras.main.startFollow(this.myPlayer, true)
     this.isFollowingPlayer = true
 
@@ -432,9 +487,10 @@ export default class Game extends Phaser.Scene {
     const handleMouseDown = (event: PointerEvent) => {
       const rect = gameCanvas.getBoundingClientRect()
       const isOverCanvas = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom
-      const target = event.target
-      const isUiControl = target instanceof Element && !!target.closest('button, input, textarea, select, [role="button"], .skyoffice-desk-editor')
-      if (!isOverCanvas || isUiControl || this.deskEditorMode) return
+      // Start panning only when the gesture begins on the actual map canvas.
+      // The full-screen chat and other overlays can cover the map's rectangle;
+      // clicks in those panels must never start a hidden camera drag.
+      if (!isOverCanvas || event.target !== gameCanvas) return
       if (event.button === 0) {
         this.isCameraDragPending = true
         this.isCameraDragging = false
@@ -473,24 +529,31 @@ export default class Game extends Phaser.Scene {
       }
     }
     const handleMouseUp = () => {
+      this.wasCameraDragging = this.isCameraDragging
       this.isCameraDragPending = false
       this.isCameraDragging = false
+      window.setTimeout(() => { this.wasCameraDragging = false }, 0)
     }
     const preventEditorContextMenu = (event: MouseEvent) => {
       if (this.deskEditorMode) event.preventDefault()
     }
-    const handleWindowBlur = () => this.resetMovementInput()
+    const handleWindowBlur = () => {
+      this.resetMovementInput()
+      handleMouseUp()
+    }
     window.addEventListener('pointerdown', handleMouseDown, true)
     window.addEventListener('pointermove', handleMouseMove, true)
-    window.addEventListener('pointerup', handleMouseUp)
-    window.addEventListener('pointercancel', handleMouseUp)
+    // Capture phase guarantees drag state is cleared even if an overlay handles
+    // or stops propagation for the pointer release.
+    window.addEventListener('pointerup', handleMouseUp, true)
+    window.addEventListener('pointercancel', handleMouseUp, true)
     window.addEventListener('blur', handleWindowBlur)
     window.addEventListener('contextmenu', preventEditorContextMenu)
     this.events.once('shutdown', () => {
       window.removeEventListener('pointerdown', handleMouseDown, true)
       window.removeEventListener('pointermove', handleMouseMove, true)
-      window.removeEventListener('pointerup', handleMouseUp)
-      window.removeEventListener('pointercancel', handleMouseUp)
+      window.removeEventListener('pointerup', handleMouseUp, true)
+      window.removeEventListener('pointercancel', handleMouseUp, true)
       window.removeEventListener('blur', handleWindowBlur)
       window.removeEventListener('contextmenu', preventEditorContextMenu)
     })
@@ -532,16 +595,48 @@ export default class Game extends Phaser.Scene {
     })
 
     this.createDeskHoverZones()
-    const placeDeskDecorationOnClick = (event: MouseEvent) => this.handleDeskEditorPlacementFromMouse(event)
-    window.addEventListener('click', placeDeskDecorationOnClick)
+    const placeDeskDecorationOnPointerUp = (event: PointerEvent) => this.handleDeskEditorPlacement(event)
+    const beginDeskDecorationDrag = (event: DragEvent) => {
+      const isCatalogItem = event.dataTransfer && Array.from(event.dataTransfer.types).includes('application/x-skyoffice-desk-item')
+      const startedInCatalog = event.target instanceof Element && Boolean(event.target.closest('.skyoffice-desk-editor .item'))
+      if (isCatalogItem || (this.deskEditorMode && startedInCatalog)) {
+        this.deskCatalogDragInProgress = true
+      }
+    }
+    const allowDeskDecorationDrop = (event: DragEvent) => {
+      if (event.target !== this.game.canvas || !event.dataTransfer || !Array.from(event.dataTransfer.types).includes('application/x-skyoffice-desk-item')) return
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'copy'
+    }
+    const dropDeskDecoration = (event: DragEvent) => this.handleDeskDecorationDrop(event)
+    const endDeskDecorationDrag = () => {
+      window.setTimeout(() => { this.deskCatalogDragInProgress = false }, 0)
+    }
+    const cancelDeskDecorationDrag = () => {
+      this.deskCatalogDragInProgress = false
+      this.draggingDeskDecoration = false
+    }
+    window.addEventListener('pointerup', placeDeskDecorationOnPointerUp, true)
+    window.addEventListener('dragstart', beginDeskDecorationDrag, true)
+    window.addEventListener('dragover', allowDeskDecorationDrop, true)
+    window.addEventListener('drop', dropDeskDecoration, true)
+    window.addEventListener('dragend', endDeskDecorationDrag, true)
+    window.addEventListener('pointercancel', cancelDeskDecorationDrag, true)
     this.input.keyboard?.on('keydown-DELETE', this.deleteSelectedDeskDecoration, this)
     this.input.keyboard?.on('keydown-BACKSPACE', this.deleteSelectedDeskDecoration, this)
     this.events.once('shutdown', () => {
-      window.removeEventListener('click', placeDeskDecorationOnClick)
+      window.removeEventListener('pointerup', placeDeskDecorationOnPointerUp, true)
+      window.removeEventListener('dragstart', beginDeskDecorationDrag, true)
+      window.removeEventListener('dragover', allowDeskDecorationDrop, true)
+      window.removeEventListener('drop', dropDeskDecoration, true)
+      window.removeEventListener('dragend', endDeskDecorationDrag, true)
+      window.removeEventListener('pointercancel', cancelDeskDecorationDrag, true)
       this.input.keyboard?.off('keydown-DELETE', this.deleteSelectedDeskDecoration, this)
       this.input.keyboard?.off('keydown-BACKSPACE', this.deleteSelectedDeskDecoration, this)
       this.deskDecorationObjects.forEach((object) => object.destroy())
       this.deskDecorationObjects.clear()
+      this.deskDecorationShadows.forEach((shadow) => shadow.destroy())
+      this.deskDecorationShadows.clear()
     })
   }
 
@@ -558,15 +653,209 @@ export default class Game extends Phaser.Scene {
     if (!enabled) {
       this.selectedDeskDecoration = undefined
       this.selectedDeskDecorationId = undefined
+      this.deskEditorTargetHighlight?.setVisible(false)
+    } else {
+      this.updateDeskEditorTargetHighlight()
     }
   }
 
   private setSelectedDeskDecoration(asset?: DeskDecorationAsset) {
     this.selectedDeskDecoration = asset
+    this.updateDeskEditorTargetHighlight()
+  }
+
+  private updateDeskEditorTargetHighlight() {
+    const highlight = this.deskEditorTargetHighlight
+    const slot = DESK_SLOTS[this.currentDeskIndex()]
+    if (!highlight || !this.deskEditorMode || !this.selectedDeskDecoration || !slot) {
+      highlight?.setVisible(false)
+      return
+    }
+    highlight.clear()
+      .fillStyle(0x6eb6ff, 0.14)
+      .fillRoundedRect(slot.x - slot.width / 2 - 5, slot.y - slot.height / 2 - 5, slot.width + 10, slot.height + 10, 6)
+      .lineStyle(2, 0x9ed1ff, 0.9)
+      .strokeRoundedRect(slot.x - slot.width / 2 - 5, slot.y - slot.height / 2 - 5, slot.width + 10, slot.height + 10, 6)
+      .setVisible(true)
   }
 
   private currentDeskIndex() {
     return this.network.roomState?.players.get(this.network.mySessionId)?.deskIndex ?? -1
+  }
+
+  private createStudyDeskStations() {
+    const unusedSeats = new Set(this.seatItems)
+    DESK_SLOTS.forEach((slot) => {
+      const chair = [...unusedSeats]
+        .map((seat) => ({ seat, distance: Phaser.Math.Distance.Between(seat.x, seat.y, slot.x, slot.y) }))
+        .sort((a, b) => a.distance - b.distance)
+        .find(({ distance }) => distance <= 36)?.seat
+      if (!chair) return
+      unusedSeats.delete(chair)
+
+      const glow = this.add.graphics().setPosition(slot.x, slot.y - 8).setDepth(slot.y + 24).setVisible(false)
+      glow.fillStyle(0xffd66e, 0.12)
+      glow.fillCircle(0, 0, 27)
+      glow.fillStyle(0xffd66e, 0.11)
+      glow.fillCircle(0, 0, 17)
+
+      const lamp = this.add.graphics().setPosition(slot.x, slot.y - 8).setDepth(slot.y + 25).setVisible(false)
+      lamp.fillStyle(0xffdf83, 1)
+      lamp.fillTriangle(-9, -12, 9, -12, 0, -21)
+      lamp.fillRoundedRect(-2, -12, 4, 10, 1)
+      lamp.fillRoundedRect(-7, -3, 14, 3, 1)
+      lamp.fillStyle(0xfff3c2, 1)
+      lamp.fillCircle(0, -11, 2)
+
+      const label = this.add.text(slot.x, slot.y - 31, '', {
+        fontFamily: 'Arial', fontSize: '9px', fontStyle: 'bold', color: '#ffe39b',
+        backgroundColor: '#29251c', padding: { x: 4, y: 2 },
+      }).setOrigin(0.5, 1).setDepth(slot.y + 26).setVisible(false)
+      this.studyDeskStations.push({ slot, chair, glow, lamp, label })
+    })
+  }
+
+  private async refreshLiveStudyMap() {
+    if (this.studySessionPollInFlight || !this.scene.isActive()) return
+    this.studySessionPollInFlight = true
+    try {
+      this.liveStudySessions = await fetchLiveStudySessions()
+      this.updateLiveStudyVisuals()
+    } catch (error) {
+      // A brief RankEstudos outage should not interfere with movement or the map.
+      console.warn('Could not refresh live study map markers', error)
+    } finally {
+      this.studySessionPollInFlight = false
+    }
+  }
+
+  private getOnlineStudyPlayers() {
+    const players: Array<{ id: string; name: string; x: number; y: number; seated: boolean; container: Phaser.GameObjects.Container }> = []
+    if (this.myPlayer?.playerName.text.trim()) {
+      players.push({
+        id: this.network.mySessionId,
+        name: this.myPlayer.playerName.text.trim(),
+        x: this.myPlayer.x,
+        y: this.myPlayer.y,
+        seated: this.myPlayer.playerBehavior === PlayerBehavior.SITTING,
+        container: this.myPlayer.playerContainer,
+      })
+    }
+    this.otherPlayerMap.forEach((player, id) => {
+      const name = player.playerName.text.trim()
+      if (!name) return
+      players.push({ id, name, x: player.x, y: player.y, seated: player.anims.currentAnim?.key.includes('_sit_') ?? false, container: player.playerContainer })
+    })
+    return players
+  }
+
+  private updateLiveStudyVisuals() {
+    const onlinePlayers = this.getOnlineStudyPlayers()
+    const sessionByName = new Map<string, LiveStudySession>()
+    this.liveStudySessions.forEach((session) => {
+      const key = normalizeStudyName(session.name)
+      const existing = sessionByName.get(key)
+      if (!existing || session.runningSince > existing.runningSince) sessionByName.set(key, session)
+    })
+
+    const seatedStudyers = new Set<string>()
+    this.studyDeskStations.forEach((station) => {
+      const occupant = onlinePlayers.find((player) => player.seated &&
+        Phaser.Math.Distance.Between(player.x, player.y, station.chair.x, station.chair.y) <= 28 &&
+        sessionByName.has(normalizeStudyName(player.name)))
+      const session = occupant ? sessionByName.get(normalizeStudyName(occupant.name)) : undefined
+      const isPaused = Boolean(session && (session.pausedAt > 0 || !session.runningSince))
+      station.glow.setVisible(Boolean(session)).setAlpha(isPaused ? 0.38 : 0.95)
+      station.lamp.setVisible(Boolean(session)).setAlpha(isPaused ? 0.55 : 1)
+      station.label.setVisible(Boolean(session)).setAlpha(isPaused ? 0.55 : 1)
+      if (session && occupant) {
+        station.label.setText(session.name)
+        seatedStudyers.add(occupant.id)
+      }
+    })
+
+    const presentStudyIds = new Set<string>()
+    onlinePlayers.forEach((player) => {
+      const session = sessionByName.get(normalizeStudyName(player.name))
+      if (!session || seatedStudyers.has(player.id)) return
+      presentStudyIds.add(player.id)
+      let badge = this.studyPresenceBadges.get(player.id)
+      if (!badge || !badge.active) {
+        badge = this.add.text(0, -29, '', {
+          fontFamily: 'Arial', fontSize: '10px', fontStyle: 'bold', color: '#ffe39b',
+          backgroundColor: '#29251c', padding: { x: 5, y: 3 },
+        }).setOrigin(0.5, 1)
+        player.container.add(badge)
+        this.studyPresenceBadges.set(player.id, badge)
+      }
+      const isPaused = Boolean(session.pausedAt > 0 || !session.runningSince)
+      badge.setText(isPaused ? '◷ Pausado' : '✦ Estudando')
+        .setColor(isPaused ? '#d2b783' : '#ffe39b')
+        .setPosition(0, -29)
+        .setVisible(true)
+    })
+    this.studyPresenceBadges.forEach((badge, id) => {
+      if (!presentStudyIds.has(id)) badge.setVisible(false)
+    })
+  }
+
+  private handleStudySessionStarted(playerName: string) {
+    if (normalizeStudyName(playerName) !== normalizeStudyName(this.myPlayer?.playerName.text || '')) return
+    void (async () => {
+      await this.refreshLiveStudyMap()
+      if (!this.myPlayer) return
+      const alreadyAtStudyDesk = this.studyDeskStations.some((station) =>
+        Phaser.Math.Distance.Between(this.myPlayer.x, this.myPlayer.y, station.chair.x, station.chair.y) <= 28 &&
+        this.myPlayer.playerBehavior === PlayerBehavior.SITTING)
+      if (alreadyAtStudyDesk) return
+
+      const onlineNames = new Set(this.getOnlineStudyPlayers().map((player) => normalizeStudyName(player.name)))
+      const activeOnlineSessions = this.liveStudySessions
+        .filter((session) => onlineNames.has(normalizeStudyName(session.name)))
+        .sort((a, b) => a.startedAt - b.startedAt || a.id.localeCompare(b.id))
+      const ownIndex = Math.max(0, activeOnlineSessions.findIndex((session) => normalizeStudyName(session.name) === normalizeStudyName(playerName)))
+      const ownedIndex = this.currentDeskIndex()
+      const preferred = ownedIndex >= 0
+        ? this.studyDeskStations.find((station) => DESK_SLOTS.indexOf(station.slot) === ownedIndex)
+        : this.studyDeskStations[ownIndex % Math.max(1, this.studyDeskStations.length)]
+
+      const occupied = (chair: Chair) => this.getOnlineStudyPlayers().some((player) =>
+        player.id !== this.network.mySessionId && Phaser.Math.Distance.Between(player.x, player.y, chair.x, chair.y) <= 23)
+      const candidates = preferred
+        ? [preferred, ...this.studyDeskStations.filter((station) => station !== preferred)]
+        : this.studyDeskStations
+      const station = candidates.find((candidate) => !occupied(candidate.chair))
+      if (station) this.walkToPosition(station.chair.x, station.chair.y, 18)
+    })()
+  }
+
+  private findWalkableSpawnNear(
+    x: number,
+    y: number,
+    mapWidth: number,
+    mapHeight: number
+  ): { x: number; y: number } | undefined {
+    const isWalkable = (candidateX: number, candidateY: number) => {
+      if (candidateX < 12 || candidateY < 12 || candidateX > mapWidth - 12 || candidateY > mapHeight - 12) return false
+      const bodyChecks: Array<[number, number]> = [[0, 0], [-8, 0], [8, 0], [0, -8], [0, 8]]
+      return bodyChecks.every(([offsetX, offsetY]) => {
+        const tile = this.collisionLayer.getTileAtWorldXY(candidateX + offsetX, candidateY + offsetY, true)
+        return !tile?.collides
+      })
+    }
+
+    const step = 16
+    for (let radius = 0; radius <= 96; radius += step) {
+      for (let offsetY = -radius; offsetY <= radius; offsetY += step) {
+        for (let offsetX = -radius; offsetX <= radius; offsetX += step) {
+          if (radius > 0 && Math.abs(offsetX) !== radius && Math.abs(offsetY) !== radius) continue
+          const candidateX = x + offsetX
+          const candidateY = y + offsetY
+          if (isWalkable(candidateX, candidateY)) return { x: candidateX, y: candidateY }
+        }
+      }
+    }
+    return undefined
   }
 
   adjustCameraZoom(amount: number) {
@@ -677,6 +966,7 @@ export default class Game extends Phaser.Scene {
 
   private createDeskHoverZones() {
     this.deskHoverHighlight = this.add.graphics().setDepth(11998).setVisible(false)
+    this.deskEditorTargetHighlight = this.add.graphics().setDepth(11997).setVisible(false)
     this.deskHoverLabelBackground = this.add.graphics().setDepth(11999).setVisible(false)
     this.deskHoverLabel = this.add
       .text(0, 0, '', {
@@ -751,27 +1041,63 @@ export default class Game extends Phaser.Scene {
     this.deskHoverLabelBackground?.setVisible(false)
   }
 
-  private handleDeskEditorPlacementFromMouse(event: MouseEvent) {
+  private handleDeskEditorPlacement(event: PointerEvent) {
     if (!this.deskEditorMode || !this.selectedDeskDecoration) return
-    if (event.button !== 0 || event.shiftKey) return
-    if (event.target !== this.game.canvas) return
+    if (this.wasCameraDragging) {
+      this.wasCameraDragging = false
+      return
+    }
+    // Native drag/drop ends with pointer events too; don't place a second copy.
+    if (this.deskCatalogDragInProgress) {
+      // Releasing outside the canvas cancels the browser's native drag state;
+      // otherwise the next map gesture would still be treated as a catalog drag.
+      if (event.target !== this.game.canvas) this.deskCatalogDragInProgress = false
+      return
+    }
+    if (this.draggingDeskDecoration) {
+      queueMicrotask(() => { this.draggingDeskDecoration = false })
+      return
+    }
+    if (event.button !== 0 || event.shiftKey || event.target !== this.game.canvas) return
+    // Phaser already applies the canvas scale, device pixel ratio and camera
+    // transform to this pointer. Reusing clientX/clientY here breaks placement
+    // on high-DPI screens and when the map is zoomed.
+    const { worldX, worldY } = this.input.activePointer
+    this.placeDeskDecorationAtWorld(worldX, worldY, this.selectedDeskDecoration)
+  }
+
+  private handleDeskDecorationDrop(event: DragEvent) {
+    if (!this.deskEditorMode || event.target !== this.game.canvas) return
+    const assetId = event.dataTransfer?.getData('application/x-skyoffice-desk-item')
+    const asset = DESK_DECORATION_ASSETS.find((entry) => entry.id === assetId)
+    if (!asset) return
+    event.preventDefault()
+    this.selectedDeskDecoration = asset
     const canvasRect = this.game.canvas.getBoundingClientRect()
-    if (event.clientX < canvasRect.left || event.clientX > canvasRect.right ||
-      event.clientY < canvasRect.top || event.clientY > canvasRect.bottom) return
-    const pointerX = ((event.clientX - canvasRect.left) / canvasRect.width) * this.scale.width
-    const pointerY = ((event.clientY - canvasRect.top) / canvasRect.height) * this.scale.height
-    const worldPoint = this.cameras.main.getWorldPoint(pointerX, pointerY)
+    if (!canvasRect.width || !canvasRect.height) return
+    const screenX = ((event.clientX - canvasRect.left) / canvasRect.width) * this.scale.width
+    const screenY = ((event.clientY - canvasRect.top) / canvasRect.height) * this.scale.height
+    if (screenX < 0 || screenY < 0 || screenX >= this.scale.width || screenY >= this.scale.height) return
+    const worldPoint = this.cameras.main.getWorldPoint(screenX, screenY)
+    this.placeDeskDecorationAtWorld(worldPoint.x, worldPoint.y, asset)
+    this.deskCatalogDragInProgress = false
+  }
+
+  private placeDeskDecorationAtWorld(x: number, y: number, asset: DeskDecorationAsset) {
     const deskIndex = this.currentDeskIndex()
     const slot = DESK_SLOTS[deskIndex]
     if (!slot) return
-    const { x, y } = worldPoint
-    if (Math.abs(x - slot.x) > slot.width / 2 || Math.abs(y - slot.y) > slot.height / 2) return
-    const placementX = Phaser.Math.Clamp(x, slot.x - slot.width / 2 + 8, slot.x + slot.width / 2 - 8)
-    const placementY = Phaser.Math.Clamp(y, slot.y - slot.height / 2 + 8, slot.y + slot.height / 2 - 8)
+    // Artwork can extend slightly beyond its interaction bounds, so accept a
+    // small margin around the tabletop and clamp the saved object into the slot.
+    if (Math.abs(x - slot.x) > slot.width / 2 + 8 || Math.abs(y - slot.y) > slot.height / 2 + 8) return
+    // Snap placement to a small grid so furniture aligns cleanly, while keeping
+    // every object's center inside the server-validated bounds of the desk.
+    const placementX = Phaser.Math.Clamp(Math.round(x / 8) * 8, slot.x - slot.width / 2 + 8, slot.x + slot.width / 2 - 8)
+    const placementY = Phaser.Math.Clamp(Math.round(y / 8) * 8, slot.y - slot.height / 2 + 8, slot.y + slot.height / 2 - 8)
 
     const id = `${this.network.mySessionId}:${Date.now()}`
     this.rememberDeskLayout()
-    if (this.selectedDeskDecoration.texture === 'computers') {
+    if (asset.texture === 'computers') {
       this.deskDecorationObjects.forEach((object, oldId) => {
         if (object instanceof Computer && this.deskDecorationOwners.get(oldId) === this.currentOwnerName()) {
           this.deskDecorationObjects.delete(oldId)
@@ -779,7 +1105,7 @@ export default class Game extends Phaser.Scene {
         }
       })
     }
-    this.addDeskDecoration(id, this.selectedDeskDecoration, placementX, placementY, this.currentOwnerName())
+    this.addDeskDecoration(id, asset, placementX, placementY, this.currentOwnerName())
     this.selectedDeskDecorationId = id
     this.saveCurrentDeskLayout()
   }
@@ -791,6 +1117,8 @@ export default class Game extends Phaser.Scene {
   private handleDeskDecorationUpdated(item: IDeskDecoration, id: string) {
     const old = this.deskDecorationObjects.get(id)
     if (old) this.hideDeskDecorationObject(old)
+    this.deskDecorationShadows.get(id)?.destroy()
+    this.deskDecorationShadows.delete(id)
     const asset = ({ texture: item.texture, frame: item.frame } as any) as DeskDecorationAsset
     const object = this.addDeskDecoration(id, asset, item.x, item.y, item.ownerName)
     object.setRotation(item.rotation || 0)
@@ -798,7 +1126,7 @@ export default class Game extends Phaser.Scene {
   }
 
   private addDeskDecoration(id: string, asset: DeskDecorationAsset, x: number, y: number, ownerName: string) {
-    let object: Phaser.GameObjects.Sprite
+    let object: Phaser.GameObjects.Sprite | Phaser.GameObjects.Image
     if (asset.texture === 'computers') {
       const deskIndex = DESK_SLOTS.findIndex((slot) => Math.abs(slot.x - x) <= slot.width / 2 && Math.abs(slot.y - y) <= slot.height / 2)
       const computer = this.computerMap.get(String(deskIndex))
@@ -810,6 +1138,12 @@ export default class Game extends Phaser.Scene {
       } else {
         object = this.add.sprite(x, y, asset.texture, asset.frame).setOrigin(0.5, 0.75).setDepth(y + 20)
       }
+    } else if (asset.texture.startsWith('pixelart_')) {
+      const itemWidth = asset.width || 20
+      const shadow = this.add.ellipse(x, y + 4, itemWidth * 2.2, itemWidth * 0.62, 0x000000, 0.28)
+        .setOrigin(0.5, 0.5).setDepth(y + 19)
+      this.deskDecorationShadows.set(id, shadow)
+      object = this.add.image(x, y, asset.texture).setOrigin(0.5, 0.85).setScale(2.2).setDepth(y + 20)
     } else {
       object = this.add.sprite(x, y, asset.texture, asset.frame).setOrigin(0.5, 0.75).setDepth(y + 20)
     }
@@ -826,6 +1160,7 @@ export default class Game extends Phaser.Scene {
         this.selectedDeskDecorationId = id
       })
       object.on('dragstart', () => {
+        this.draggingDeskDecoration = true
         this.selectedDeskDecorationId = id
         this.rememberDeskLayout()
       })
@@ -835,8 +1170,13 @@ export default class Game extends Phaser.Scene {
         object.setPosition(Phaser.Math.Clamp(dragX, slot.x - slot.width / 2 + 8, slot.x + slot.width / 2 - 8),
           Phaser.Math.Clamp(dragY, slot.y - slot.height / 2 + 8, slot.y + slot.height / 2 - 8))
         object.setDepth(object.y + 20)
+        const shadow = this.deskDecorationShadows.get(id)
+        if (shadow) shadow.setPosition(object.x, object.y + 4).setDepth(object.y + 19)
       })
-      object.on('dragend', () => this.saveCurrentDeskLayout())
+      object.on('dragend', () => {
+        this.draggingDeskDecoration = false
+        this.saveCurrentDeskLayout()
+      })
     }
     return object
   }
@@ -844,11 +1184,13 @@ export default class Game extends Phaser.Scene {
   private handleDeskDecorationRemoved(id: string) {
     const object = this.deskDecorationObjects.get(id)
     if (object) this.hideDeskDecorationObject(object)
+    this.deskDecorationShadows.get(id)?.destroy()
+    this.deskDecorationShadows.delete(id)
     this.deskDecorationObjects.delete(id)
     this.deskDecorationOwners.delete(id)
   }
 
-  private hideDeskDecorationObject(object: Phaser.GameObjects.Sprite) {
+  private hideDeskDecorationObject(object: Phaser.GameObjects.Sprite | Phaser.GameObjects.Image) {
     if (Array.from(this.computerMap.values()).includes(object as Computer)) {
       const computer = object as Computer
       computer.setVisible(false)
@@ -932,7 +1274,7 @@ export default class Game extends Phaser.Scene {
       .map(([id, object]) => ({
         id,
         texture: object.texture.key,
-        frame: Number(object.frame.name),
+        frame: object.texture.key.startsWith('pixelart_') ? 0 : Number(object.frame.name),
         dx: object.x - slot.x,
         dy: object.y - slot.y,
         rotation: object.rotation,
@@ -944,6 +1286,8 @@ export default class Game extends Phaser.Scene {
     this.deskDecorationObjects.forEach((object, id) => {
       if (this.deskDecorationOwners.get(id) === owner) {
         this.hideDeskDecorationObject(object)
+        this.deskDecorationShadows.get(id)?.destroy()
+        this.deskDecorationShadows.delete(id)
         this.deskDecorationObjects.delete(id)
         this.deskDecorationOwners.delete(id)
       }
@@ -967,7 +1311,8 @@ export default class Game extends Phaser.Scene {
     // set selected item and set up new dialog
     playerSelector.selectedItem = selectionItem
     if (selectionItem.itemType === ItemType.COMPUTER) {
-      ;(selectionItem as Computer).openDialog(this.network.mySessionId, this.network)
+      const computer = selectionItem as Computer
+      computer.openDialog(this.network.mySessionId, this.network)
       return
     }
     selectionItem.onOverlapDialog()
@@ -1065,6 +1410,8 @@ export default class Game extends Phaser.Scene {
     otherPlayer.playerName.on('pointerdown', beginPlayerClick)
     otherPlayer.playerName.on('pointerup', selectPlayer)
     if (newPlayer.anim) otherPlayer.updateOtherPlayer('anim', newPlayer.anim)
+    otherPlayer.readyToConnect = newPlayer.readyToConnect
+    otherPlayer.videoConnected = newPlayer.videoConnected
     otherPlayer.cameraEnabled = newPlayer.cameraEnabled
     otherPlayer.setTint(newPlayer.tint ?? 0xffffff)
     otherPlayer.setMicrophoneEnabled(newPlayer.microphoneEnabled)
@@ -1097,6 +1444,10 @@ export default class Game extends Phaser.Scene {
   }
 
   private handlePlayerVoiceActivity(id: string, speaking: boolean) {
+    if (id === this.network.mySessionId) {
+      this.myPlayer.setSpeaking(speaking)
+      return
+    }
     this.otherPlayerMap.get(id)?.setSpeaking(speaking)
   }
 
@@ -1126,6 +1477,10 @@ export default class Game extends Phaser.Scene {
   }
 
   update(t: number, dt: number) {
+    if (t - this.lastStudyVisualUpdate >= 500) {
+      this.lastStudyVisualUpdate = t
+      this.updateLiveStudyVisuals()
+    }
     if (document.body.classList.contains('meeting-fullscreen')) {
       this.roomHoverLabel.style.display = 'none'
       this.hoveredRoomAreaId = undefined
@@ -1529,6 +1884,9 @@ export default class Game extends Phaser.Scene {
   private isolatedRoomAt(x: number, y: number) {
     for (let index = this.roomAreas.length - 1; index >= 0; index--) {
       const area = this.roomAreas[index]
+      // Desk claim polygons are visual/workstation areas, not private voice
+      // rooms. People at desks must remain part of the general nearby audio.
+      if (area.name.trim().toLocaleLowerCase() === 'unclaimed desk') continue
       if (area.isolateVoice && Phaser.Geom.Polygon.Contains(area.polygon, x, y)) return area
     }
     return undefined

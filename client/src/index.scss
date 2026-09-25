@@ -69,7 +69,7 @@ body.meeting-active video.meeting-video {
   height: 100% !important;
   border: 0 !important;
   border-radius: 8px !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   box-shadow: none !important;
   transform: none !important;
   z-index: 0 !important;

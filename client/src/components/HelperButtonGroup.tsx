@@ -54,10 +54,12 @@ export default function HelperButtonGroup() {
     }
     const claimDesk = (index: number) => setDeskIndex(index)
     phaserEvents.on(Event.MY_PLAYER_READY, syncOwnedDesk)
+    phaserEvents.on(Event.MY_DESK_UPDATED, claimDesk)
     phaserEvents.on(Event.DESK_CLAIMED, claimDesk)
     syncOwnedDesk()
     return () => {
       phaserEvents.off(Event.MY_PLAYER_READY, syncOwnedDesk)
+      phaserEvents.off(Event.MY_DESK_UPDATED, claimDesk)
       phaserEvents.off(Event.DESK_CLAIMED, claimDesk)
     }
   }, [])

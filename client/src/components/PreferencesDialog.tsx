@@ -58,6 +58,8 @@ type Props = {
   setNearbyVolume: (value: number) => void
   selfViewHidden: boolean
   setSelfViewHidden: (hidden: boolean) => void
+  cameraMirrored: boolean
+  setCameraMirrored: (mirrored: boolean) => void
 }
 
 export default function PreferencesDialog(props: Props) {
@@ -122,6 +124,7 @@ export default function PreferencesDialog(props: Props) {
                 </Select>
               </FormControl>
               <FormControlLabel control={<Switch checked={props.selfViewHidden} onChange={(event) => props.setSelfViewHidden(event.target.checked)} />} label="Hide my camera preview" />
+              <FormControlLabel control={<Switch checked={props.cameraMirrored} onChange={(event) => props.setCameraMirrored(event.target.checked)} />} label="Inverter câmera para todos" />
               <div className="hint">Your camera remains off until you turn it on from the bottom bar.</div>
             </>}
             {section === 'Chat' && <>

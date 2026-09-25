@@ -20,8 +20,9 @@ import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
 import ChairAltIcon from '@mui/icons-material/ChairAlt'
 import GridViewIcon from '@mui/icons-material/GridView'
-import WeekendIcon from '@mui/icons-material/Weekend'
 import ComputerIcon from '@mui/icons-material/Computer'
+import HeadphonesIcon from '@mui/icons-material/Headphones'
+import DevicesOtherIcon from '@mui/icons-material/DevicesOther'
 import UndoIcon from '@mui/icons-material/Undo'
 import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -36,6 +37,7 @@ import { markConversationRead, setShowChat, setFocused, setSelectedConversation 
 import GroupFocusPanel from './GroupFocusPanel'
 import IndividualFocusPanel from './IndividualFocusPanel'
 import RankEstudosDialog from './RankEstudosDialog'
+import StudyTogetherPanel from './StudyTogetherPanel'
 import EditAvatarDialog from './EditAvatarDialog'
 import TeamLabelDialog from './TeamLabelDialog'
 import PreferencesDialog from './PreferencesDialog'
@@ -307,28 +309,19 @@ function DeskAssetPreview({ asset, cursor = false, zoom = 1 }: { asset: DeskDeco
     const canvas = ref.current
     if (!canvas) return
     const image = new Image()
-    image.src = asset.texture === 'office' ? '/assets/tileset/Modern_Office_Black_Shadow.png'
-      : asset.texture === 'generic' ? '/assets/tileset/Generic.png'
-      : asset.texture === 'basement' ? '/assets/tileset/Basement.png'
-      : asset.texture === 'chairs' ? '/assets/items/chair.png'
-      : asset.texture === 'computers' ? '/assets/items/computer.png'
-      : asset.texture === 'laptop' ? '/assets/items/laptop.svg'
-      : asset.texture === 'whiteboards' ? '/assets/items/whiteboard.png' : '/assets/items/vendingmachine.png'
+    image.src = asset.path
     image.onload = () => {
       const ctx = canvas.getContext('2d')
       if (!ctx) return
       const spec = DESK_DECORATION_TEXTURES[asset.texture]
-      const cols = Math.floor(image.width / spec.width)
-      const sx = (asset.frame % cols) * spec.width
-      const sy = Math.floor(asset.frame / cols) * spec.height
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.imageSmoothingEnabled = false
       if (cursor) {
-        ctx.drawImage(image, sx, sy, spec.width, spec.height, 0, 0, canvas.width, canvas.height)
+        ctx.drawImage(image, 0, 0, spec.width, spec.height, 0, 0, canvas.width, canvas.height)
       } else {
         const scale = Math.min(36 / spec.width, 30 / spec.height)
         const width = spec.width * scale, height = spec.height * scale
-        ctx.drawImage(image, sx, sy, spec.width, spec.height, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height)
+        ctx.drawImage(image, 0, 0, spec.width, spec.height, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height)
       }
     }
   }, [asset, cursor, zoom])
@@ -366,9 +359,10 @@ const DeskEditorMenu = styled.div`
   .items { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; overflow: auto; flex: 1; min-height: 0; align-content: start; }
   .item {
     min-height: 58px; border: 1px solid transparent; border-radius: 8px;
-    color: #e7eaf1; background: transparent; cursor: pointer;
+    color: #e7eaf1; background: transparent; cursor: grab;
     display: grid; place-items: center;
   }
+  .item:active { cursor: grabbing; }
   .item:hover, .item.selected { border-color: #55dfbd; background: rgba(85,223,189,.10); }
   .item canvas { image-rendering: pixelated; }
   .history { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; padding-top: 9px; border-top: 1px solid #303541; }
@@ -420,6 +414,7 @@ export default function BottomBar() {
   const [activeMicId, setActiveMicId] = useState<string | undefined>(() => loadOfficePreferences().microphoneId || undefined)
   const [activeCameraId, setActiveCameraId] = useState<string | undefined>(() => loadOfficePreferences().cameraId || undefined)
   const [selfViewHidden, setSelfViewHidden] = useState(() => loadOfficePreferences().selfViewHidden)
+  const [cameraMirrored, setCameraMirrored] = useState(() => loadOfficePreferences().cameraMirrored)
   const [nearbyVolume, setNearbyVolume] = useState(() => loadOfficePreferences().nearbyVolume)
   const [focusAnchor, setFocusAnchor] = useState<HTMLButtonElement | null>(null)
   const [individualFocusAnchor, setIndividualFocusAnchor] = useState<HTMLButtonElement | null>(null)
@@ -484,11 +479,13 @@ export default function BottomBar() {
       phaserEvents.emit(Event.DESK_EDITOR_MODE, true)
     }
     phaserEvents.on(Event.DESK_CLAIMED, claimComplete)
+    phaserEvents.on(Event.MY_DESK_UPDATED, claimComplete)
     phaserEvents.on(Event.MY_PLAYER_READY, syncOwnedDesk)
     phaserEvents.on(Event.DESK_EDITOR_REQUEST, requestEditor)
     syncOwnedDesk()
     return () => {
       phaserEvents.off(Event.DESK_CLAIMED, claimComplete)
+      phaserEvents.off(Event.MY_DESK_UPDATED, claimComplete)
       phaserEvents.off(Event.MY_PLAYER_READY, syncOwnedDesk)
       phaserEvents.off(Event.DESK_EDITOR_REQUEST, requestEditor)
     }
@@ -568,9 +565,10 @@ export default function BottomBar() {
       microphoneId: activeMicId || '',
       cameraId: activeCameraId || '',
       selfViewHidden,
+      cameraMirrored,
       nearbyVolume,
     })
-  }, [status, activeMicId, activeCameraId, selfViewHidden, nearbyVolume])
+  }, [status, activeMicId, activeCameraId, selfViewHidden, cameraMirrored, nearbyVolume])
 
   useEffect(() => {
     setAvatarChoice(loadSavedAvatar(myPlayerName) || DEFAULT_AVATAR_CHOICE)
@@ -582,8 +580,15 @@ export default function BottomBar() {
 
   useEffect(() => {
     getWebRTC()?.setSelfViewHidden(selfViewHidden)
+    void getWebRTC()?.setCameraMirrored(cameraMirrored)
     getWebRTC()?.setNearbyVolume(nearbyVolume / 100)
-  }, [selfViewHidden, nearbyVolume])
+  }, [selfViewHidden, cameraMirrored, nearbyVolume])
+
+  const handleToggleCameraMirrored = () => {
+    const next = !cameraMirrored
+    void getWebRTC()?.setCameraMirrored(next)
+    setCameraMirrored(next)
+  }
 
   const handleConnectOrToggleMic = async () => {
     const webRTC = getWebRTC()
@@ -861,23 +866,28 @@ export default function BottomBar() {
             Hide self view
             <Switch size="small" checked={selfViewHidden} onChange={handleToggleSelfView} />
           </DeviceMenuRow>
+          <DeviceMenuRow>
+            Inverter câmera para todos
+            <Switch size="small" checked={cameraMirrored} onChange={handleToggleCameraMirrored} />
+          </DeviceMenuRow>
         </DeviceMenu>
       </Popover>
 
       {Boolean(deskEditorAnchor) && createPortal(<DeskEditorMenu className="skyoffice-desk-editor">
         <div className="top">
-          <div className="heading">Decoração</div>
+          <div className="heading">Meu cantinho</div>
           <button className="close" type="button" aria-label="Fechar decoração" onClick={closeDeskEditor}>×</button>
         </div>
-          <div className="hint">Escolha uma peça e clique na mesa para colocá-la.</div>
+          <div className="hint">Escolha um item, clique no tampo da sua mesa para colocar e arraste para ajustar.</div>
           {deskIndex >= 0 && <>
           <input className="search" value={deskSearch} onChange={(event) => setDeskSearch(event.target.value)} placeholder="Buscar item" />
           <div className="categories">
             {[
               { value: 'Todos', name: 'Tudo', icon: <GridViewIcon fontSize="small" /> },
               { value: 'Office', name: 'Escritório', icon: <ChairAltIcon fontSize="small" /> },
-              { value: 'Seating', name: 'Assentos', icon: <WeekendIcon fontSize="small" /> },
               { value: 'Technology', name: 'Tecnologia', icon: <ComputerIcon fontSize="small" /> },
+              { value: 'Audio', name: 'Áudio', icon: <HeadphonesIcon fontSize="small" /> },
+              { value: 'Accessories', name: 'Acessórios', icon: <DevicesOtherIcon fontSize="small" /> },
             ].map(({ value, name, icon }) => <button key={value} type="button" title={name} aria-label={name} className={`category${deskCategory === value ? ' selected' : ''}`} onClick={() => setDeskCategory(value)}>{icon}</button>)}
           </div>
           <div className="items">
@@ -885,13 +895,21 @@ export default function BottomBar() {
               <button
                 key={asset.id}
                 type="button"
+                draggable
                 className={`item${selectedDeskDecoration?.id === asset.id ? ' selected' : ''}`}
                 aria-label={asset.label}
                 title={asset.label}
-                onClick={() => {
+                onPointerDown={() => {
                   const next = selectedDeskDecoration?.id === asset.id ? undefined : asset
                   setSelectedDeskDecoration(next)
                   phaserEvents.emit(Event.DESK_EDITOR_SELECT, next)
+                }}
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = 'copy'
+                  event.dataTransfer.setData('application/x-skyoffice-desk-item', asset.id)
+                  event.dataTransfer.setData('text/plain', asset.id)
+                  setSelectedDeskDecoration(asset)
+                  phaserEvents.emit(Event.DESK_EDITOR_SELECT, asset)
                 }}
               >
                 <DeskAssetPreview asset={asset} />
@@ -902,7 +920,7 @@ export default function BottomBar() {
             <button type="button" aria-label="Desfazer" title="Desfazer" onClick={() => phaserEvents.emit(Event.DESK_UNDO)}><UndoIcon fontSize="small" /></button>
             <button type="button" aria-label="Refazer" title="Refazer" onClick={() => phaserEvents.emit(Event.DESK_REDO)}><RedoIcon fontSize="small" /></button>
           </div>
-  <p className="help">Clique para posicionar · Botão direito ou Shift + arraste move a câmera · R gira · Delete remove</p>
+  <p className="help">Clique na mesa para posicionar · Arraste um item para mover · R gira · Delete remove</p>
           </>}
       </DeskEditorMenu>, document.body)}
       {deskEditorAnchor && selectedDeskDecoration && decorationCursor.visible && createPortal(
@@ -913,14 +931,17 @@ export default function BottomBar() {
       )}
 
       <Tooltip title="Lançar horas no RankEstudos">
-        <RoundIconButton
-          aria-label="Lançar horas no RankEstudos"
-          disabled={!loggedIn || !myPlayerName}
-          onClick={() => setRankEstudosOpen(true)}
-        >
-          <MenuBookIcon fontSize="small" />
-        </RoundIconButton>
+        <span>
+          <RoundIconButton
+            aria-label="Lançar horas no RankEstudos"
+            disabled={!loggedIn || !myPlayerName}
+            onClick={() => setRankEstudosOpen(true)}
+          >
+            <MenuBookIcon fontSize="small" />
+          </RoundIconButton>
+        </span>
       </Tooltip>
+      <StudyTogetherPanel playerName={myPlayerName} />
       <RankEstudosDialog
         open={rankEstudosOpen}
         playerName={myPlayerName}
@@ -1027,6 +1048,8 @@ export default function BottomBar() {
         setNearbyVolume={setNearbyVolume}
         selfViewHidden={selfViewHidden}
         setSelfViewHidden={handleToggleSelfView}
+        cameraMirrored={cameraMirrored}
+        setCameraMirrored={handleToggleCameraMirrored}
       />
     </Bar>
     </>

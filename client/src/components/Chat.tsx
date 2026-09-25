@@ -18,10 +18,10 @@ import SearchIcon from '@mui/icons-material/Search'
 import phaserGame from '../PhaserGame'
 import Game from '../scenes/Game'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { markConversationRead, setFocused, setSelectedConversation, setShowChat } from '../stores/ChatStore'
+import { directConversationKey, markConversationRead, setFocused, setSelectedConversation, setShowChat } from '../stores/ChatStore'
 import { Event, phaserEvents } from '../events/EventCenter'
 
-type Contact = { id: string; name: string; online: boolean }
+type Contact = { id: string; sessionId: string; name: string; online: boolean }
 type MentionContact = Contact & { isYou?: boolean }
 type Notice = { kind: 'wave' | 'meeting' | 'call' | 'declined' | 'info'; fromId: string; fromName: string; text?: string; roomName?: string }
 type DeferredCall = { fromId: string; fromName: string; roomId: string; roomName: string }
@@ -35,6 +35,7 @@ const ChatWindow = styled.section`
   z-index: 20000;
   display: grid;
   grid-template-columns: 294px minmax(0, 1fr);
+  min-height: 0;
   overflow: hidden;
   border: 1px solid #373b45;
   border-radius: 12px;
@@ -79,12 +80,12 @@ const ChatWindow = styled.section`
   .nav-item svg { width: 17px; height: 17px; color: #9da4b0; }
   .nav-item:hover { background: #292d35; }
   .nav-item[data-active='true'] { color: #fff; background: #303541; }
-  .contacts { overflow: auto; }
+  .contacts { min-height: 0; flex: 1; overflow-y: auto; }
   .contact-list { display:flex; flex-direction:column; gap:2px; }
   .unread-badge { min-width:18px;height:18px;margin-left:auto;padding:0 5px;display:grid;place-items:center;border-radius:10px;background:#e33b4b;color:#fff;font-size:11px;font-weight:700;line-height:1; }
   .empty { padding: 7px 9px; color: #858c99; font-size: 11px; line-height: 1.4; }
 
-  .conversation { min-width: 0; display: flex; flex-direction: column; }
+  .conversation { min-width: 0; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
   .conversation-header {
     display: flex;
     align-items: center;
@@ -104,6 +105,7 @@ const ChatWindow = styled.section`
   .header-action.go { padding:0 12px; border-radius:10px; background:#2939c9; color:#fff; font-size:12px; }
   .message-list {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 17px;
@@ -124,6 +126,8 @@ const ChatWindow = styled.section`
   .bubble { padding: 3px 0 0; color: #c5c7cd; font-size: 14px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
   .mention { color:#92a8ff; background:#252c43; border-radius:4px; padding:1px 3px; }
   .attachment-link { display:inline-flex; align-items:center; gap:6px; margin-top:5px; padding:6px 9px; border:1px solid #3b414c; border-radius:7px; color:#b8c5ff; background:#242832; text-decoration:none; }
+  .image-attachment { display:block; max-width:min(520px,100%); max-height:420px; margin-top:7px; padding:0; overflow:hidden; border:1px solid #3b414c; border-radius:9px; background:#17191e; cursor:zoom-in; }
+  .image-attachment img { display:block; max-width:100%; max-height:420px; object-fit:contain; }
   .composer {
     position:relative;
     display: flex;
@@ -353,15 +357,24 @@ export default function Chat() {
       messages.forEach((message) => {
         if (message.channel !== 'direct') return
         if (message.senderId === sessionId && message.recipientId && message.recipientName) {
-          known.set(message.recipientId, { id: message.recipientId, name: message.recipientName, online: false })
+          known.set(directConversationKey(message.recipientName), { id: directConversationKey(message.recipientName), sessionId: message.recipientId, name: message.recipientName, online: false })
         } else if (message.senderId !== sessionId) {
-          known.set(message.senderId, { id: message.senderId, name: message.senderName, online: false })
+          known.set(directConversationKey(message.senderName), { id: directConversationKey(message.senderName), sessionId: message.senderId, name: message.senderName, online: false })
         }
       })
       players?.forEach((player, id) => {
-        if (id !== sessionId && player.name) known.set(id, { id, name: player.name, online: true })
+        if (id !== sessionId && player.name) {
+          const key = directConversationKey(player.name)
+          known.set(key, { id: key, sessionId: id, name: player.name, online: true })
+        }
       })
-      setContacts([...known.values()].sort((a, b) => Number(b.online) - Number(a.online) || a.name.localeCompare(b.name)))
+      const sorted = [...known.values()].sort((a, b) => Number(b.online) - Number(a.online) || a.name.localeCompare(b.name))
+      const uniqueByName = new Map<string, Contact>()
+      sorted.forEach((contact) => {
+        const normalizedName = contact.name.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
+        if (normalizedName && !uniqueByName.has(normalizedName)) uniqueByName.set(normalizedName, contact)
+      })
+      setContacts([...uniqueByName.values()])
     }
     refreshContacts()
     const timer = window.setInterval(refreshContacts, 1200)
@@ -382,7 +395,7 @@ export default function Chat() {
     return contacts.find((contact) => contact.id === id)
   }, [contacts, selectedConversation])
   const mentionCandidates = useMemo<MentionContact[]>(() => {
-    const you: MentionContact = { id: sessionId, name: myPlayerName || 'Você', online: true, isYou: true }
+    const you: MentionContact = { id: sessionId, sessionId, name: myPlayerName || 'Você', online: true, isYou: true }
     if (selectedConversation.startsWith('dm:')) return [you, ...(currentContact ? [currentContact] : [])]
     return [you, ...contacts.filter((contact) => contact.online)]
   }, [contacts, currentContact, myPlayerName, selectedConversation, sessionId])
@@ -439,13 +452,18 @@ export default function Chat() {
         <span className="identity"><div className="name">{selectedPlayer.name}</div><div className="time">◷ {new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date())} local time</div></span>
       </div>
       <div className="actions">
-        <button className="wave" type="button" aria-label="Acenar" title="Acenar" onClick={() => network?.sendWave(selectedPlayer.id)}><WavingHandIcon fontSize="small" /></button>
+        <button className="wave" type="button" aria-label="Acenar" title="Acenar" onClick={() => {
+          const targetId = selectedPlayer.id
+          setSelectedPlayer(null)
+          setQuickMoreOpen(false)
+          network?.sendWave(targetId)
+        }}><WavingHandIcon fontSize="small" /></button>
         <button className="go" type="button" onClick={() => walkToContact(selectedPlayer.id)}><NearMeIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: .5 }} />Ir até</button>
         <button type="button" aria-label="Ligar para meeting" title="Ligar para meeting" onClick={() => network?.startMeetingCall(selectedPlayer.id)}><VideocamOutlinedIcon fontSize="small" /></button>
-        <button type="button" aria-label="Abrir mensagem direta" title="Mensagem direta" onClick={() => { dispatch(setSelectedConversation(`dm:${selectedPlayer.id}`)); dispatch(setFocused(false)); dispatch(setShowChat(true)); setSelectedPlayer(null) }}><ForumOutlinedIcon fontSize="small" /></button>
+        <button type="button" aria-label="Abrir mensagem direta" title="Mensagem direta" onClick={() => { dispatch(setSelectedConversation(`dm:${directConversationKey(selectedPlayer.name)}`)); dispatch(setFocused(false)); dispatch(setShowChat(true)); setSelectedPlayer(null) }}><ForumOutlinedIcon fontSize="small" /></button>
         <button type="button" aria-label="Mais opções" title="Mais opções" onClick={() => setQuickMoreOpen((open) => !open)}><MoreVertIcon fontSize="small" /></button>
       </div>
-      {quickMoreOpen && <div className="more-menu"><button type="button" onClick={() => { dispatch(setSelectedConversation(`dm:${selectedPlayer.id}`)); dispatch(setShowChat(true)); setSelectedPlayer(null); setQuickMoreOpen(false) }}>Enviar mensagem</button><button type="button" onClick={() => { setSelectedPlayer(null); setQuickMoreOpen(false) }}>Fechar cartão</button></div>}
+      {quickMoreOpen && <div className="more-menu"><button type="button" onClick={() => { dispatch(setSelectedConversation(`dm:${directConversationKey(selectedPlayer.name)}`)); dispatch(setShowChat(true)); setSelectedPlayer(null); setQuickMoreOpen(false) }}>Enviar mensagem</button><button type="button" onClick={() => { setSelectedPlayer(null); setQuickMoreOpen(false) }}>Fechar cartão</button></div>}
     </PlayerQuickCard>
   )
 
@@ -479,8 +497,9 @@ export default function Chat() {
     } else if (selectedConversation === 'general') network.addChatMessage(content, 'general', undefined, attachment)
     else {
       const recipientId = selectedConversation.slice(3)
-      if (!contacts.some((contact) => contact.id === recipientId && contact.online)) return
-      network.addChatMessage(content, 'direct', recipientId, attachment)
+      const recipient = contacts.find((contact) => contact.id === recipientId && contact.online)
+      if (!recipient) return
+      network.addChatMessage(content, 'direct', recipient.sessionId, attachment)
     }
     setInputValue('')
     setSelectedFile(null)
@@ -600,9 +619,9 @@ export default function Chat() {
           </div>
           <div className="header-actions">
             {currentContact && <>
-              <IconButton className="header-action primary" size="small" aria-label="Acenar" title="Acenar" onClick={() => network?.sendWave(currentContact.id)}><WavingHandIcon fontSize="small" /></IconButton>
-              <button className="header-action go" type="button" disabled={!currentContact.online} onClick={() => walkToContact(currentContact.id)}><NearMeIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: .5 }} />Go to</button>
-              <IconButton className="header-action" size="small" aria-label="Ligar para meeting" title="Ligar para meeting" disabled={!currentContact.online} onClick={() => network?.startMeetingCall(currentContact.id)}><VideocamOutlinedIcon fontSize="small" /></IconButton>
+              <IconButton className="header-action primary" size="small" aria-label="Acenar" title="Acenar" disabled={!currentContact.online} onClick={() => network?.sendWave(currentContact.sessionId)}><WavingHandIcon fontSize="small" /></IconButton>
+              <button className="header-action go" type="button" disabled={!currentContact.online} onClick={() => walkToContact(currentContact.sessionId)}><NearMeIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: .5 }} />Go to</button>
+              <IconButton className="header-action" size="small" aria-label="Ligar para meeting" title="Ligar para meeting" disabled={!currentContact.online} onClick={() => network?.startMeetingCall(currentContact.sessionId)}><VideocamOutlinedIcon fontSize="small" /></IconButton>
             </>}
             <IconButton className="header-action" size="small" aria-label="Mais opções"><MoreVertIcon fontSize="small" /></IconButton>
             <IconButton className="close" aria-label="Fechar chat" size="small" onClick={closeChat}><CloseIcon fontSize="small" /></IconButton>
@@ -623,7 +642,9 @@ export default function Chat() {
               <div className="avatar">{(message.senderName || 'P').slice(0, 1).toUpperCase()}</div>
               <div className="message-body"><div className="byline">{message.senderId === sessionId ? 'Você' : message.senderName}<span className="time">{new Date(message.sentAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span></div>
               {message.content && <div className="bubble">{message.content.split(/(@[^\s@]+)/g).map((part, index) => part.startsWith('@') ? <span className="mention" key={index}>{part}</span> : part)}</div>}
-              {message.attachment && <a className="attachment-link" href={message.attachment.data} download={message.attachment.name}><AttachFileIcon fontSize="small" />{message.attachment.name}</a>}</div>
+              {message.attachment && (message.attachment.mimeType.toLocaleLowerCase().startsWith('image/')
+                ? <div className="image-attachment"><img src={message.attachment.data} alt={message.attachment.name} loading="lazy" /></div>
+                : <a className="attachment-link" href={message.attachment.data} download={message.attachment.name}><AttachFileIcon fontSize="small" />{message.attachment.name}</a>)}</div>
             </div>
           ))}
         </div>

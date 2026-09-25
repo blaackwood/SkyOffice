@@ -42,8 +42,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   speaking = false
   playerName: Phaser.GameObjects.Text
   playerContainer: Phaser.GameObjects.Container
+  private playerNameBadge: Phaser.GameObjects.Graphics
   private playerNameDot: Phaser.GameObjects.Arc
-  private microphoneIndicator: Phaser.GameObjects.Text
+  private speakingBubble: Phaser.GameObjects.Container
+  private playerNameBadgeWidth = -1
+  private playerNameBadgeHeight = -1
   private playerDialogBubble: Phaser.GameObjects.Container
   private timeoutID?: number
 
@@ -69,23 +72,39 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.playerDialogBubble = this.scene.add.container(0, 0).setDepth(5000)
     this.playerContainer.add(this.playerDialogBubble)
 
-    // add playerName to playerContainer: dark pill with a green status dot, Gather-style
+    // Gather-style name badge: rounded indigo pill, clear text and a small tail.
+    this.playerNameBadge = this.scene.add.graphics()
     this.playerName = this.scene.add
       .text(0, 0, '', {
         fontFamily: 'Arial',
         fontSize: '12px',
-        color: '#ffffff',
-        backgroundColor: '#1e2233',
-        padding: { left: 16, right: 22, top: 3, bottom: 3 },
+        fontStyle: 'bold',
+        color: '#e8eaff',
+        padding: { left: 19, right: 11, top: 5, bottom: 5 },
       })
       .setOrigin(0.5)
     this.playerNameDot = this.scene.add.circle(0, 0, 3, 0x2ecc71)
-    this.microphoneIndicator = this.scene.add
-      .text(0, 0, '🔇', { fontFamily: 'Arial', fontSize: '10px' })
-      .setOrigin(0.5)
+    this.playerContainer.add(this.playerNameBadge)
     this.playerContainer.add(this.playerName)
     this.playerContainer.add(this.playerNameDot)
-    this.playerContainer.add(this.microphoneIndicator)
+
+    // Small Gather-style speech indicator shown while this player's microphone
+    // is actively picking up voice. It stays in the world with the avatar so
+    // everyone nearby can see who is talking.
+    this.speakingBubble = this.scene.add.container(22, 4).setVisible(false)
+    const speakingBackground = this.scene.add.graphics()
+    speakingBackground.fillStyle(0xffffff, 0.98)
+    speakingBackground.fillRoundedRect(-15, -10, 30, 18, 8)
+    speakingBackground.fillTriangle(-4, 7, 4, 7, 0, 13)
+    const speakingDots = this.scene.add.text(0, -1, '•••', {
+      color: '#171923',
+      fontFamily: 'Arial',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      padding: { left: 1, right: 1, top: 0, bottom: 0 },
+    }).setOrigin(0.5)
+    this.speakingBubble.add([speakingBackground, speakingDots])
+    this.playerContainer.add(this.speakingBubble)
 
     this.scene.physics.world.enable(this.playerContainer)
     const playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
@@ -95,11 +114,30 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       .setOffset(-8, this.height * (1 - collisionScale[1]) + 6)
   }
 
-  // keep the status dot glued to the left edge of the name pill, whatever the name's length
+  // Keep the badge and online dot sized and positioned around each player's name.
   preUpdate(time: number, delta: number) {
     super.preUpdate(time, delta)
+    this.refreshPlayerNameBadge()
     this.playerNameDot.setPosition(-this.playerName.width / 2 + 9, 0)
-    this.microphoneIndicator.setPosition(this.playerName.width / 2 - 11, 0)
+    this.speakingBubble.setPosition(Math.max(22, this.playerName.width / 2 + 8), 4)
+  }
+
+  private refreshPlayerNameBadge(): void {
+    const width = this.playerName.width
+    const height = this.playerName.height
+    if (width === this.playerNameBadgeWidth && height === this.playerNameBadgeHeight) return
+    this.playerNameBadgeWidth = width
+    this.playerNameBadgeHeight = height
+
+    const left = -width / 2
+    const top = -height / 2
+    const radius = height / 2
+    this.playerNameBadge.clear()
+    this.playerNameBadge.fillStyle(0x303865, 0.98)
+    this.playerNameBadge.fillRoundedRect(left, top, width, height, radius)
+    this.playerNameBadge.fillTriangle(-4, top + height - 1, 4, top + height - 1, 0, top + height + 5)
+    this.playerNameBadge.lineStyle(1, 0x4b568a, 0.9)
+    this.playerNameBadge.strokeRoundedRect(left, top, width, height, radius)
   }
 
   // recolor the status dot next to the name (active/busy/away)
@@ -109,18 +147,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
   setMicrophoneEnabled(enabled: boolean) {
     this.microphoneEnabled = enabled
-    this.refreshMicrophoneIndicator()
   }
 
   setSpeaking(speaking: boolean) {
     this.speaking = speaking
-    this.refreshMicrophoneIndicator()
-  }
-
-  private refreshMicrophoneIndicator() {
-    const active = this.speaking && this.microphoneEnabled
-    this.microphoneIndicator.setText(active ? '🔊' : this.microphoneEnabled ? '🎙️' : '🔇')
-    this.microphoneIndicator.setColor(active ? '#63e6a2' : this.microphoneEnabled ? '#d6dfef' : '#8991a8')
+    this.speakingBubble.setVisible(speaking)
   }
 
   updateDialogBubble(content: string) {

@@ -5,6 +5,7 @@ export interface OfficePreferences {
   microphoneId: string
   cameraId: string
   selfViewHidden: boolean
+  cameraMirrored: boolean
   nearbyVolume: number
 }
 
@@ -14,6 +15,7 @@ const defaults: OfficePreferences = {
   microphoneId: '',
   cameraId: '',
   selfViewHidden: false,
+  cameraMirrored: false,
   nearbyVolume: 80,
 }
 

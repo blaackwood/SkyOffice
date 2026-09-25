@@ -19,6 +19,9 @@ import {
   WhiteboardRemoveUserCommand,
 } from './commands/WhiteboardUpdateArrayCommand'
 
+const normalizePlayerName = (name: string) =>
+  name.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
+
 export class SkyOffice extends Room<OfficeState> {
   private dispatcher = new Dispatcher(this)
   private groupFocusTicker?: ReturnType<typeof setInterval>
@@ -37,7 +40,19 @@ export class SkyOffice extends Room<OfficeState> {
     attachment?: { name: string; mimeType: string; data: string }
     sentAt: number
   }> = []
+  private directChatHistory: Array<{
+    messageId: string
+    channel: 'direct'
+    senderId: string
+    senderName: string
+    recipientId: string
+    recipientName: string
+    content: string
+    attachment?: { name: string; mimeType: string; data: string }
+    sentAt: number
+  }> = []
   private generalChatSequence = 0
+  private directChatSequence = 0
   private chatClearTimer?: ReturnType<typeof setTimeout>
   private configuredAutoDispose = true
 
@@ -145,14 +160,18 @@ export class SkyOffice extends Room<OfficeState> {
       const player = this.state.players.get(client.sessionId)
       if (!name || !player) return
       if (player.deskIndex >= 0 && player.name.toLocaleLowerCase() !== name.toLocaleLowerCase()) return
+      const normalizedName = normalizePlayerName(name)
       const duplicate = Array.from(this.state.players.entries()).some(
-        ([sessionId, other]) => sessionId !== client.sessionId && other.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase()
+        ([sessionId, other]) => sessionId !== client.sessionId && normalizePlayerName(other.name) === normalizedName
       )
       if (duplicate) return
       this.dispatcher.dispatch(new PlayerUpdateNameCommand(), {
         client,
         name,
       })
+      // The initial history request can arrive before the participant's name
+      // is set. Replay again now so their direct conversations are included.
+      this.sendChatHistory(client)
       // Reclaim the same desk when the named participant rejoins this room.
       const owned = Array.from(this.state.desks.entries()).find(([, desk]) => desk.ownerName.toLocaleLowerCase() === name.toLocaleLowerCase())
       if (owned) {
@@ -411,14 +430,20 @@ export class SkyOffice extends Room<OfficeState> {
         const recipientId = typeof message.recipientId === 'string' ? message.recipientId : ''
         const recipient = this.clients.find((entry) => entry.sessionId === recipientId)
         const recipientPlayer = this.state.players.get(recipientId)
-        if (!recipient || !recipientPlayer || recipientId === client.sessionId) return
+        if (!recipientPlayer || recipientId === client.sessionId) return
         const directPayload = {
           ...payload,
+          messageId: `${payload.sentAt}-dm-${++this.directChatSequence}`,
+          channel: 'direct' as const,
           recipientId,
           recipientName: recipientPlayer.name || 'Participante',
         }
+        // Keep private conversations for the same daily cycle as #Geral,
+        // including while their recipient is offline.
+        this.autoDispose = false
+        this.directChatHistory.push(directPayload)
         client.send(Message.ADD_CHAT_MESSAGE, directPayload)
-        recipient.send(Message.ADD_CHAT_MESSAGE, directPayload)
+        recipient?.send(Message.ADD_CHAT_MESSAGE, directPayload)
         return
       }
 
@@ -437,8 +462,7 @@ export class SkyOffice extends Room<OfficeState> {
     })
 
     this.onMessage(Message.REQUEST_CHAT_HISTORY, (client) => {
-      if (!this.state.players.has(client.sessionId)) return
-      this.generalChatHistory.forEach((message) => client.send(Message.ADD_CHAT_MESSAGE, { ...message, history: true }))
+      this.sendChatHistory(client)
     })
 
     this.onMessage(Message.CONNECTION_HEARTBEAT, (client) => {
@@ -728,10 +752,32 @@ export class SkyOffice extends Room<OfficeState> {
     if (this.chatClearTimer) clearTimeout(this.chatClearTimer)
     this.chatClearTimer = setTimeout(() => {
       this.generalChatHistory = []
+      this.directChatHistory = []
       this.broadcast(Message.CLEAR_CHAT_HISTORY)
       this.autoDispose = this.configuredAutoDispose
       this.scheduleGeneralChatClear()
       if (this.clients.length === 0 && this.configuredAutoDispose) this.disconnect()
     }, millisecondsUntilBrasiliaChatClear(Date.now()))
+  }
+
+  private sendChatHistory(client: Client) {
+    const player = this.state.players.get(client.sessionId)
+    if (!player) return
+    this.generalChatHistory.forEach((message) => client.send(Message.ADD_CHAT_MESSAGE, { ...message, history: true }))
+    const normalizedRequester = normalizePlayerName(player.name || '')
+    this.directChatHistory.forEach((message) => {
+      const isSender = normalizePlayerName(message.senderName) === normalizedRequester
+      const isRecipient = normalizePlayerName(message.recipientName) === normalizedRequester
+      if (!normalizedRequester || (!isSender && !isRecipient)) return
+      const otherName = isSender ? message.recipientName : message.senderName
+      const onlinePeer = Array.from(this.state.players.entries()).find(([, candidate]) => normalizePlayerName(candidate.name) === normalizePlayerName(otherName))
+      const peerId = onlinePeer?.[0] || (isSender ? message.recipientId : message.senderId)
+      client.send(Message.ADD_CHAT_MESSAGE, {
+        ...message,
+        senderId: isSender ? client.sessionId : peerId,
+        recipientId: isRecipient ? client.sessionId : peerId,
+        history: true,
+      })
+    })
   }
 }

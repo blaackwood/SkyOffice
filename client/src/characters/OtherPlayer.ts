@@ -9,6 +9,7 @@ export default class OtherPlayer extends Player {
   private targetPosition: [number, number]
   private lastUpdateTimestamp?: number
   private connectionBufferTime = 0
+  private connectionAttemptStartedAt = 0
   private connected = false
   private playContainerBody: Phaser.Physics.Arcade.Body
   private myPlayer?: MyPlayer
@@ -42,27 +43,62 @@ export default class OtherPlayer extends Player {
       }
       this.connected = false
       this.connectionBufferTime = 0
+      this.connectionAttemptStartedAt = 0
       return
+    }
+
+    // A call can fail while the other browser is still opening PeerJS. Drop
+    // the stale local flag so proximity can retry on the next update.
+    if (this.connected && !webRTC.hasPeerConnection(this.playerId)) {
+      this.connected = false
+      this.connectionBufferTime = 0
+      this.connectionAttemptStartedAt = 0
     }
 
     if (webRTC.hasPeerConnection(this.playerId)) {
-      this.connected = true
+      if (webRTC.hasRemoteMedia(this.playerId, this.cameraEnabled)) {
+        this.connected = true
+        this.connectionAttemptStartedAt = 0
+        return
+      }
+
+      // Sometimes PeerJS leaves a signalling call registered even though the
+      // remote media stream never arrived. Without clearing it, the proximity
+      // code believes the pair is connected forever and only moving away and
+      // back creates a new attempt. Retry the stuck call automatically.
+      if (!this.connectionAttemptStartedAt) this.connectionAttemptStartedAt = Date.now()
+      if (Date.now() - this.connectionAttemptStartedAt >= 4000) {
+        phaserEvents.emit(Event.PLAYER_DISCONNECTED, this.playerId)
+        this.connected = false
+        this.connectionBufferTime = 0
+        this.connectionAttemptStartedAt = 0
+      }
       return
     }
 
-    const shouldInitiate = myPlayer.playerId > this.playerId || !this.videoConnected
+    this.connectionAttemptStartedAt = 0
+
+    // A live local stream is the only requirement. Camera/readiness flags can
+    // be stale when a participant joined earlier, while the stream itself is
+    // authoritative for both microphone-only and camera calls.
+    const remoteHasMedia = this.videoConnected || this.microphoneEnabled || this.cameraEnabled
+    // Wait until both clients have announced that their room and PeerJS side
+    // are ready. The local WebRTC object can open a few frames before the
+    // remote peer is addressable; calling during that window creates the
+    // stuck connection that only used to recover after walking away.
+    const shouldInitiate = webRTC.peerReady && webRTC.hasStream && myPlayer.readyToConnect && this.readyToConnect && (myPlayer.playerId > this.playerId || !remoteHasMedia)
     if (
       shouldInitiate &&
       !this.connected &&
       this.connectionBufferTime >= 750 &&
-      myPlayer.readyToConnect &&
-      this.readyToConnect &&
-      myPlayer.videoConnected &&
       myPlayerId !== this.playerId
     ) {
-      webRTC.connectToNewUser(this.playerId)
-      this.connected = true
-      this.connectionBufferTime = 0
+      const connected = webRTC.connectToNewUser(this.playerId)
+      if (connected) {
+        this.connected = true
+        this.connectionBufferTime = 0
+        this.connectionAttemptStartedAt = Date.now()
+      }
     }
   }
 
@@ -213,6 +249,7 @@ export default class OtherPlayer extends Player {
       phaserEvents.emit(Event.PLAYER_DISCONNECTED, this.playerId)
       this.connectionBufferTime = 0
       this.connected = false
+      this.connectionAttemptStartedAt = 0
     }
   }
 }

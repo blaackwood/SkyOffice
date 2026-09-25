@@ -8,6 +8,7 @@ import {
 } from '../../../types/IOfficeState'
 import type { IDeskDecoration } from '../../../types/Desk'
 import { SavedDeskDecoration, loadDeskLayout, saveDeskLayout } from './DeskLayout'
+import { savePlayerPosition } from './PlayerPosition'
 import { Message } from '../../../types/Messages'
 import { IRoomData, RoomType } from '../../../types/Rooms'
 import { ItemType } from '../../../types/Items'
@@ -23,7 +24,7 @@ import {
   removeAvailableRooms,
   setConnectionStatus,
 } from '../stores/RoomStore'
-import { clearDailyChat, incrementUnread, pushConversationMessage } from '../stores/ChatStore'
+import { clearDailyChat, directConversationKey, incrementUnread, markConversationRead, pushConversationMessage } from '../stores/ChatStore'
 import { playChatNotificationSound, playWaveNotificationSound, startCallRingtone } from './ChatNotificationSound'
 import { setWhiteboardUrls } from '../stores/WhiteboardStore'
 import { setGroupFocus } from '../stores/FocusStore'
@@ -42,6 +43,7 @@ export default class Network {
   private connectionHeartbeatTimeout?: number
   private chatClearTimer?: number
   private lastPlayerUpdate?: { x: number; y: number; anim: string }
+  private lastPositionSavedAt = 0
   private lastPlayerTint?: number
   private lastPlayerStatus?: 'active' | 'busy' | 'away'
   private lastMicrophoneEnabled?: boolean
@@ -89,7 +91,10 @@ export default class Network {
   }
 
   private handleChatVisibilityChange = () => {
-    if (document.visibilityState !== 'visible') return
+    if (document.visibilityState !== 'visible') {
+      this.saveLastPlayerPosition()
+      return
+    }
     this.clearChatIfBrasiliaDayChanged()
     this.scheduleDailyChatClear()
     this.sendConnectionHeartbeat()
@@ -240,8 +245,24 @@ export default class Network {
     const trackPlayer = (player: IPlayer, key: string) => {
       if (trackedPlayers.has(key)) return
       trackedPlayers.add(key)
-      if (key === this.mySessionId) return
+      if (key === this.mySessionId) {
+        const syncMyDesk = () => phaserEvents.emit(Event.MY_DESK_UPDATED, player.deskIndex)
+        player.onChange = (changes) => {
+          if (changes.some(({ field }) => field === 'deskIndex')) syncMyDesk()
+        }
+        syncMyDesk()
+        return
+      }
       phaserEvents.emit(Event.PLAYER_UPDATED, 'status', player.status, key)
+      // The initial room snapshot does not trigger individual onChange events.
+      // Publish every connection/media flag here as well, otherwise a player
+      // who was already in the room looks like an unready peer until their
+      // state changes. That can make both browsers wait or start competing
+      // calls, which is the main source of proximity calls needing a move to
+      // reconnect.
+      phaserEvents.emit(Event.PLAYER_UPDATED, 'readyToConnect', player.readyToConnect, key)
+      phaserEvents.emit(Event.PLAYER_UPDATED, 'videoConnected', player.videoConnected, key)
+      phaserEvents.emit(Event.PLAYER_UPDATED, 'cameraEnabled', player.cameraEnabled, key)
       phaserEvents.emit(Event.PLAYER_UPDATED, 'microphoneEnabled', player.microphoneEnabled, key)
       let playerReportedJoined = false
       const reportPlayerJoined = () => {
@@ -335,12 +356,19 @@ export default class Network {
         return
       }
       if (message.channel !== 'general' && message.channel !== 'direct') return
-      const peerId = message.channel === 'direct'
-        ? (message.senderId === this.mySessionId ? message.recipientId : message.senderId)
-        : undefined
-      const conversationId = message.channel === 'general' ? 'general' : `dm:${peerId || ''}`
+      const isOwnById = message.senderId === this.mySessionId
+      const ownNameKey = directConversationKey(store.getState().user.myPlayerName || '')
+      const senderNameKey = directConversationKey(message.senderName || '')
+      const peerName = isOwnById || (ownNameKey && senderNameKey === ownNameKey)
+        ? message.recipientName
+        : message.senderName
+      const conversationId = message.channel === 'general' ? 'general' : `dm:${directConversationKey(peerName || '')}`
+      const messageId = message.messageId || `${message.sentAt ?? Date.now()}:${message.senderId}:${Math.random()}`
+      const cleanChatName = (name: string) => name.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase()
+      const signedInName = store.getState().user.myPlayerName || ''
+      const isOwnMessage = message.senderId === this.mySessionId || Boolean(signedInName && cleanChatName(message.senderName || '') === cleanChatName(signedInName))
       store.dispatch(pushConversationMessage({
-        id: message.messageId || `${message.sentAt ?? Date.now()}:${message.senderId}:${Math.random()}`,
+        id: messageId,
         channel: message.channel,
         conversationId,
         senderId: message.senderId || '',
@@ -351,12 +379,11 @@ export default class Network {
         attachment: message.attachment,
         sentAt: message.sentAt ?? Date.now(),
       }))
-      if (message.senderId !== this.mySessionId) {
+      if (!isOwnMessage) {
         if (!message.history) playChatNotificationSound()
         const chat = store.getState().chat
-        if (!chat.showChat || chat.selectedConversation !== conversationId) {
-          store.dispatch(incrementUnread(conversationId))
-        }
+        if (chat.showChat && chat.selectedConversation === conversationId) store.dispatch(markConversationRead(conversationId))
+        else store.dispatch(incrementUnread({ conversationId, sentAt: message.sentAt ?? Date.now(), messageId }))
       }
     })
 
@@ -612,7 +639,21 @@ export default class Network {
   // method to send player updates to Colyseus server
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {
     this.lastPlayerUpdate = { x: currentX, y: currentY, anim: currentAnim }
+    this.persistPlayerPosition(currentX, currentY)
     this.room?.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
+  }
+
+  saveLastPlayerPosition(x = this.lastPlayerUpdate?.x, y = this.lastPlayerUpdate?.y): void {
+    if (x === undefined || y === undefined) return
+    this.persistPlayerPosition(x, y, true)
+  }
+
+  private persistPlayerPosition(x: number, y: number, force = false): void {
+    const now = Date.now()
+    if (!force && now - this.lastPositionSavedAt < 1000) return
+    const name = store.getState().user.myPlayerName || sessionStorage.getItem('skyoffice.pendingPlayerName') || ''
+    savePlayerPosition(name, x, y)
+    this.lastPositionSavedAt = now
   }
 
   // method to send player name to Colyseus server

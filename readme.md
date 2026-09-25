@@ -9,7 +9,7 @@ An immersive virtual office - Winner of [2021 Monte Jade Innovation Competition]
 - 🙌 Get latest updates? Follow our [Twitter](https://twitter.com/SkyOfficeApp).
 - 💕 Love this project? Consider [buy me a coffee](https://www.buymeacoffee.com/skyoffice).
 
-SkyOffice works on all PC browsers (mobile browsers are currently not supported)
+SkyOffice works on PC browsers and mobile browsers with touch controls.
 
 ## Built with
 
@@ -55,6 +55,7 @@ SkyOffice works on all PC browsers (mobile browsers are currently not supported)
 ## Controls
 
 - `W, A, S, D, or arrow keys` to move (video chat will start if you are close to someone else)
+- On mobile, use the virtual joystick to move
 - `E` to sit down
 - `R` to use computer (for screen sharing)
 - `Enter` to open chat

@@ -56,10 +56,14 @@ const Screen = styled.section`
   header .close { margin-left:auto;width:30px;height:30px;border-radius:50%;background:transparent;font-size:19px; }
   header .close:hover { background:#25272b; }
   button { color:inherit; border:0; cursor:pointer; font:inherit; }
-  .stage { position:relative; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; padding:14px 8px; }
-  .tiles { width:100%; height:min(60vh,430px); display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); grid-auto-rows:minmax(220px,1fr); gap:8px; }
+  .stage { position:relative; min-width:0; min-height:0; overflow:hidden; display:flex; align-items:stretch; justify-content:stretch; padding:14px 8px; }
+  .tiles { width:100%; height:100%; min-width:0; min-height:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); grid-auto-rows:minmax(0,1fr); align-content:stretch; gap:8px; }
   .tiles.spotlight { position:relative;width:100%;height:100%;display:block; }
-  .tile { position:relative; min-height:0; overflow:hidden; display:grid; place-items:center; border-radius:7px; background:#101112; }
+  .tile { position:relative; width:100%; height:100%; min-width:0; min-height:0; overflow:hidden; display:grid; place-items:center; border-radius:7px; background:#101112; }
+  /* Keep the whole shared screen inside the tile. The source can be wider or
+     taller than the meeting tile, so contain prevents cropping at the edges. */
+  .tile video.meeting-video,
+  .mini-tile video.meeting-video { position:absolute !important; inset:0 !important; display:block !important; width:100% !important; height:100% !important; object-fit:contain !important; background:#050608; border:0 !important; border-radius:7px !important; transform:none !important; }
   .tiles.spotlight .tile.spotlight-main { position:absolute;inset:0;width:100%;height:100%; }
   .tiles.spotlight .tile.spotlight-self,.tiles.spotlight .tile.spotlight-secondary { position:absolute;z-index:5;right:14px;bottom:14px;width:min(28%,320px);height:auto;min-height:0;aspect-ratio:16/9;border:1px solid #55585d;box-shadow:0 4px 18px #0009; }
   .tiles.spotlight .tile.spotlight-hidden { display:none; }
@@ -152,7 +156,7 @@ const Screen = styled.section`
   .device-popup { position:absolute;z-index:2;left:0;bottom:48px;display:flex;flex-direction:column;align-items:stretch;gap:4px;width:min(310px,80vw);max-height:42vh;overflow:auto;padding:7px;border:1px solid #30333a;border-radius:11px;background:#191b20;box-shadow:0 6px 22px #0009; }
   .device-popup button { width:100%;min-height:34px;padding:6px 9px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:7px;background:#282b32; }
   &.compact-shell { display:contents; }
-  @media(max-width:700px) { grid-template-columns:minmax(0,1fr) 280px; .tiles{grid-template-columns:1fr;grid-auto-rows:minmax(120px,1fr);height:min(60vh,430px)} .stage{padding:8px} }
+  @media(max-width:700px) { grid-template-columns:minmax(0,1fr) 280px; .tiles{grid-template-columns:1fr;grid-auto-rows:minmax(0,1fr);height:100%} .stage{padding:8px} }
   @media(max-width:540px) { grid-template-columns:minmax(0,1fr);grid-template-rows:48px minmax(0,1fr) 58px; .chat{display:none}.tile{min-height:120px}.permission-hint{font-size:10px} }
 `
 
@@ -320,6 +324,12 @@ export default function MeetingPanel({ presence, onClose }: Props) {
   }, [presence.roomId])
 
   useEffect(() => {
+    if (spotlightParticipantId && !presence.participants.some((participant) => participant.playerId === spotlightParticipantId)) {
+      setSpotlightParticipantId(null)
+    }
+  }, [presence.participants, spotlightParticipantId])
+
+  useEffect(() => {
     const listener = (message: MeetingChatMessage) => {
       if (message.roomId !== presence.roomId || !message.content.startsWith(MEETING_HAND_SIGNAL)) return
       const raised = message.content.slice(MEETING_HAND_SIGNAL.length) === 'up'
@@ -447,7 +457,7 @@ export default function MeetingPanel({ presence, onClose }: Props) {
   }
 
   const changeSpotlight = (participantId: string) => {
-    setSpotlightParticipantId(participantId)
+    setSpotlightParticipantId((current) => current === participantId ? null : participantId)
   }
 
   const toggleMicrophone = async () => {
@@ -463,8 +473,12 @@ export default function MeetingPanel({ presence, onClose }: Props) {
     if (!webRTC) return
     setMediaError('')
     if (sharingScreen) {
-      webRTC.stopMeetingScreenShare()
-      setSharingScreen(false)
+      // Sharing the screen must not be stopped just because the camera button
+      // was used. The camera track can be changed independently; the screen
+      // remains the outgoing video shown in the meeting.
+      if (webRTC.hasCameraTrack) webRTC.toggleVideo()
+      else if (!await webRTC.getCameraMedia()) setMediaError('Não foi possível ligar a câmera. Verifique a permissão do navegador.')
+      return
     }
     if (cameraEnabled) webRTC.toggleVideo()
     else if (!webRTC.hasCameraTrack) {
@@ -478,9 +492,13 @@ export default function MeetingPanel({ presence, onClose }: Props) {
       setSharingScreen(false)
       return
     }
-    const started = await webRTC?.startMeetingScreenShare()
-    if (started) setSharingScreen(true)
-    else setMediaError('Não foi possível compartilhar a tela.')
+    try {
+      const started = await webRTC?.startMeetingScreenShare()
+      if (started) setSharingScreen(true)
+      else setMediaError('Não foi possível compartilhar a tela. Escolha uma tela ou janela para continuar.')
+    } catch (error) {
+      setMediaError(error instanceof Error ? error.message : 'Não foi possível compartilhar a tela.')
+    }
   }
 
   const sendReaction = (reaction: string) => {

@@ -193,9 +193,11 @@ export default function GroupFocusPanel({ anchorEl, onClose }: Props) {
             </button>
           )}
           <Tooltip title="Reiniciar fase">
-            <button disabled={isRunning} aria-label="Reiniciar fase" onClick={() => send('reset')}>
-              <ReplayIcon fontSize="small" />
-            </button>
+            <span>
+              <button disabled={isRunning} aria-label="Reiniciar fase" onClick={() => send('reset')}>
+                <ReplayIcon fontSize="small" />
+              </button>
+            </span>
           </Tooltip>
           <button onClick={() => send('stop')}><StopIcon fontSize="small" /> Encerrar</button>
         </Controls>

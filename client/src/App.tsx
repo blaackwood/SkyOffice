@@ -11,6 +11,8 @@ import Chat from './components/Chat'
 import HelperButtonGroup from './components/HelperButtonGroup'
 import BottomBar from './components/BottomBar'
 import MeetingPanel from './components/MeetingPanel'
+import MobileVirtualJoystick from './components/MobileVirtualJoystick'
+import TopRankBanner from './components/TopRankBanner'
 import phaserGame from './PhaserGame'
 import Game from './scenes/Game'
 import { Event, phaserEvents } from './events/EventCenter'
@@ -49,6 +51,9 @@ const Backdrop = styled.div`
   position: absolute;
   height: 100%;
   width: 100%;
+  /* The UI host covers the canvas, but it must not swallow map gestures. */
+  pointer-events: none;
+  > * { pointer-events: auto; }
 `
 
 function App() {
@@ -99,6 +104,7 @@ function App() {
       {loggedIn && !computerDialogOpen && !whiteboardDialogOpen && meetingPresence && dismissedMeetingRoomId !== meetingPresence.roomId && (
         <MeetingPanel presence={meetingPresence} onClose={() => setDismissedMeetingRoomId(meetingPresence.roomId)} />
       )}
+      {loggedIn && !computerDialogOpen && !whiteboardDialogOpen && !meetingPresence && <TopRankBanner />}
       {loggedIn && connectionStatus !== 'connected' && (
         <ConnectionNotice role="status">
           {connectionStatus === 'reconnecting'
@@ -119,6 +125,7 @@ function App() {
       )}
       {/* Render HelperButtonGroup if no dialogs are opened. */}
       {!computerDialogOpen && !whiteboardDialogOpen && <HelperButtonGroup />}
+      {loggedIn && !computerDialogOpen && !whiteboardDialogOpen && <MobileVirtualJoystick />}
       {/* Render BottomBar (mic/camera controls) whenever logged in and no dialog is open. */}
       {loggedIn && !computerDialogOpen && !whiteboardDialogOpen && !(meetingPresence && dismissedMeetingRoomId !== meetingPresence.roomId) && <BottomBar />}
     </Backdrop>

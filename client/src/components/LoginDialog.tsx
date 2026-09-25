@@ -40,7 +40,7 @@ export default function LoginDialog() {
   const roomJoined = useAppSelector((state) => state.room.roomJoined)
   const game = phaserGame.scene.keys.game as Game
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!name || !roomJoined) return
     primeChatNotificationSound()
@@ -60,7 +60,7 @@ export default function LoginDialog() {
       game.myPlayer.anims.currentAnim?.key ?? `${avatarChoice.avatar}_idle_down`
     )
     const previewStream = takePreviewMediaStream()
-    if (previewStream && game.network.webRTC) game.network.webRTC.adoptPrejoinMedia(previewStream)
+    if (previewStream && game.network.webRTC) await game.network.webRTC.adoptPrejoinMedia(previewStream)
     else previewStream?.getTracks().forEach((track) => track.stop())
     game.network.readyToConnect()
     dispatch(setLoggedIn(true))

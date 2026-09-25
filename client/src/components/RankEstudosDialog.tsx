@@ -12,6 +12,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook'
 import CloseIcon from '@mui/icons-material/Close'
 
 import { hasStudyPin, submitStudyHours } from '../services/RankEstudosLive'
+import { Event, phaserEvents } from '../events/EventCenter'
 
 interface Props {
   open: boolean
@@ -63,6 +64,7 @@ export default function RankEstudosDialog({ open, playerName, onClose }: Props) 
         corrections: Number(corrections) || 0,
         classHours: Number(classHours) || 0,
       }, pin, confirmation)
+      phaserEvents.emit(Event.RANK_ESTUDOS_UPDATED)
       setSuccess(true)
       window.setTimeout(onClose, 900)
     } catch (err) {
