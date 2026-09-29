@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import { changeActivity } from '../../types/PlayerActivity'
 import { Room, Client, ServerError } from 'colyseus'
 import { Dispatcher } from '@colyseus/command'
 import { Player, OfficeState, Computer, Whiteboard, DeskDecoration, DeskSlot } from './schema/OfficeState'
@@ -21,6 +22,40 @@ import {
 
 const normalizePlayerName = (name: string) =>
   name.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
+
+const avatarDatabaseUrl = (process.env.RANKESTUDOS_DATABASE_URL || 'https://rankestudos2-default-rtdb.firebaseio.com').replace(/\/$/, '')
+const avatarProfileCache = new Map<string, string>()
+const avatarProfileKey = (name: string) => normalizePlayerName(name).replace(/[.#$\[\]\/]/g, '_').slice(0, 80)
+
+async function loadAvatarProfile(name: string): Promise<string> {
+  const key = avatarProfileKey(name)
+  if (!key) return ''
+  const cached = avatarProfileCache.get(key)
+  if (cached) return cached
+  try {
+    const response = await fetch(avatarDatabaseUrl + '/skyofficeAvatars/' + encodeURIComponent(key) + '.json')
+    if (!response.ok) return ''
+    const saved = await response.json() as { appearance?: unknown } | null
+    if (typeof saved?.appearance === 'string' && saved.appearance.length <= 1200) {
+      avatarProfileCache.set(key, saved.appearance)
+      return saved.appearance
+    }
+  } catch (error) {
+    console.warn('Could not load saved avatar profile', error)
+  }
+  return ''
+}
+
+function saveAvatarProfile(name: string, appearance: string) {
+  const key = avatarProfileKey(name)
+  if (!key) return
+  avatarProfileCache.set(key, appearance)
+  void fetch(avatarDatabaseUrl + '/skyofficeAvatars/' + encodeURIComponent(key) + '.json', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ appearance, updatedAt: Date.now() }),
+  }).catch((error) => console.warn('Could not save avatar profile', error))
+}
 
 export class SkyOffice extends Room<OfficeState> {
   private dispatcher = new Dispatcher(this)
@@ -169,6 +204,10 @@ export class SkyOffice extends Room<OfficeState> {
         client,
         name,
       })
+      void loadAvatarProfile(name).then((appearance) => {
+        const current = this.state.players.get(client.sessionId)
+        if (appearance && current?.name === name && !current.avatarAppearance) current.avatarAppearance = appearance
+      })
       // The initial history request can arrive before the participant's name
       // is set. Replay again now so their direct conversations are included.
       this.sendChatHistory(client)
@@ -227,6 +266,24 @@ export class SkyOffice extends Room<OfficeState> {
       const tint = Number(message?.tint)
       if (!player || !Number.isInteger(tint) || tint < 0 || tint > 0xffffff) return
       player.tint = tint
+    })
+    this.onMessage(Message.UPDATE_PLAYER_APPEARANCE, (client, message: { appearance: string }) => {
+      const player = this.state.players.get(client.sessionId)
+      const raw = typeof message?.appearance === 'string' ? message.appearance : ''
+      if (!player || raw.length > 1200) return
+      try {
+        const parsed = JSON.parse(raw) as Record<string, unknown>
+        const allowed = ['skin', 'bottom', 'top', 'jacket', 'shoes', 'facialHair', 'hair', 'hat', 'glasses', 'other']
+        const safe: Record<string, string> = {}
+        allowed.forEach((key) => {
+          const value = parsed[key]
+          if (typeof value === 'string' && value.length <= 64 && /^[a-z0-9_]*$/i.test(value)) safe[key] = value
+        })
+        player.avatarAppearance = JSON.stringify(safe)
+        if (player.name) saveAvatarProfile(player.name, player.avatarAppearance)
+      } catch {
+        return
+      }
     })
 
     this.onMessage(Message.UPDATE_MICROPHONE_STATE, (client, message: { enabled: boolean }) => {
@@ -300,6 +357,14 @@ export class SkyOffice extends Room<OfficeState> {
       if (decoration.ownerName === player.name.trim().toLocaleLowerCase()) {
         this.state.deskDecorations.delete(String(message.id))
       }
+    })
+
+    this.onMessage(Message.UPDATE_PLAYER_ACTIVITY, (client, message: unknown) => {
+      const player = this.state.players.get(client.sessionId)
+      if (!player) return
+      const current = player.activity ? JSON.parse(player.activity) : { label: '', startedAt: 0, elapsedMs: 0 }
+      const next = changeActivity(current, message, Date.now())
+      if (next !== current) player.activity = next.label ? JSON.stringify(next) : ''
     })
 
     this.onMessage(
@@ -704,6 +769,7 @@ export class SkyOffice extends Room<OfficeState> {
       y: player.y,
       anim: player.anim,
       tint: player.tint,
+      avatarAppearance: player.avatarAppearance,
       readyToConnect: player.readyToConnect,
       videoConnected: player.videoConnected,
       cameraEnabled: player.cameraEnabled,
@@ -781,3 +847,4 @@ export class SkyOffice extends Room<OfficeState> {
     })
   }
 }
+

@@ -42,6 +42,7 @@
     <button id="undo">Desfazer</button><button id="redo">Refazer</button>
     <button id="zoomIn">Zoom +</button><button id="zoomOut">Zoom −</button><button id="focusSeat">Enquadrar assento</button><button id="resetZoom">Ver mapa todo</button>
     <button id="hideBrush">Ocultar pixels</button><button id="showBrush">Mostrar pixels</button>
+    <button id="resetMask">Restaurar corpo inteiro</button>
     <label>Espessura <input id="brushSize" type="range" min="1" max="16" value="8" /><span id="brushValue">8 px</span></label>
     <button id="saveMap">Baixar seat-map.json</button>
     <button id="saveCollision">Baixar map-collision.json</button>
@@ -64,11 +65,53 @@
     function undo(){if(!undoStack.length)return;redoStack.push(JSON.stringify(state.points));state.points=JSON.parse(undoStack.pop());state.selectedMany.clear();if(state.selected>=state.points.length)state.selected=-1;draw();updateStatus();}
     function redo(){if(!redoStack.length)return;undoStack.push(JSON.stringify(state.points));state.points=JSON.parse(redoStack.pop());state.selectedMany.clear();if(state.selected>=state.points.length)state.selected=-1;draw();updateStatus();}
     const dirs = { up: '↑', down: '↓', left: '←', right: '→' };
-    const sitFrame = { down: 48, left: 49, right: 50, up: 51 };
+    const sitFrame = { down: 0, left: 1, right: 2, up: 3 };
     // Keep these pixel offsets in sync with sittingShiftData in Player.ts.
     const sitShift = { up: [0,3], down: [0,3], left: [0,3], right: [0,3] };
-    const avatar = new Image();
-    avatar.src = '/assets/character/adam.png';
+    // Compose the same current avatar used by the game. Keeping this local to
+    // the mapper also makes the deployed static tool work without Phaser.
+    const avatar = document.createElement('canvas'); avatar.width=128; avatar.height=48;
+    let avatarReady = false;
+    const avatarParts = { skin:'skin_02', hair:'hair_01', top:'top_01', jacket:'jacket_01', pants:'pants_01', shoes:'shoes_01' };
+    const avatarOrder = ['skin','pants','shoes','top','jacket','hair'];
+    const avatarDirections = ['down','left','right','up'];
+    function loadAvatarImage(slot,id,direction){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=`/assets/atelier-avatar/sheets/${direction}/${slot}/${id}.png`;});}
+    function drawAvatarStanding(target,layers,direction){
+      for(const slot of avatarOrder){const source=layers[slot];if(!source)continue;let x=0,y=0,w=64,h=96;
+        if(slot==='skin')h=66.5;
+        if(slot==='top'){x=(direction==='left'?45:direction==='right'?61:42)/2;w=(direction==='left'||direction==='right'?23:44)/2;}
+        // Layers have already been resized to 64x96; crop in that same space.
+        target.drawImage(source,x,y,w,h,x,y,w,h);
+        if(slot==='jacket'&&(direction==='left'||direction==='right')){
+          const handX=direction==='left'?32:20.75;
+          target.drawImage(layers.skin,handX,59.5,11.25,7,handX,59.5,11.25,7);
+        }
+      }
+    }
+    function drawAvatarSeated(target,standing,legLayers,direction){
+      target.save();target.scale(.5,.5);target.beginPath();target.rect(0,0,64,96);target.clip();
+      if(direction==='left'||direction==='right'){
+        const sign=direction==='left'?-1:1,drop=7,angle=Math.PI/2,kneeX=33+sign*13,kneeY=68;
+        target.drawImage(legLayers,0,74,64,22,kneeX-33,kneeY,64,22);
+        target.save();target.translate(33,68);target.rotate(-sign*angle);target.drawImage(legLayers,0,61,64,13,-33,0,64,13);target.restore();
+        target.drawImage(standing,0,0,64,66.5,0,drop,64,66.5);
+      }else{
+        target.drawImage(standing,0,61,64,35,0,68,64,22.4);
+        target.drawImage(standing,0,0,64,61,0,7,64,61);
+      }
+      target.restore();
+    }
+    async function prepareAvatar(){
+      const output=avatar.getContext('2d');
+      for(let i=0;i<avatarDirections.length;i++){
+        const direction=avatarDirections[i],entries=await Promise.all(avatarOrder.map(async slot=>[slot,await loadAvatarImage(slot,avatarParts[slot],direction)]));
+        const layers={};for(const [slot,image] of entries){const frame=document.createElement('canvas');frame.width=64;frame.height=96;frame.getContext('2d').drawImage(image,0,0,128,192,0,0,64,96);layers[slot]=frame;}
+        const standing=document.createElement('canvas');standing.width=64;standing.height=96;drawAvatarStanding(standing.getContext('2d'),layers,direction);
+        const legs=document.createElement('canvas');legs.width=64;legs.height=96;const legContext=legs.getContext('2d');legContext.drawImage(layers.pants,0,0);legContext.drawImage(layers.shoes,0,0);
+        output.save();output.translate(i*32,0);drawAvatarSeated(output,standing,legs,direction);output.restore();
+      }
+      avatarReady=true;draw();
+    }
     const avatarCanvas = document.createElement('canvas'); avatarCanvas.width=32; avatarCanvas.height=48;
     const avatarCtx=avatarCanvas.getContext('2d',{willReadFrequently:true});
     let collisionMap, seatMapData, tiledCollisionMap;
@@ -109,7 +152,7 @@
         const px=p.x+shift[0], py=p.y+shift[1];
         const x=state.x+p.x*state.scale, y=state.y+p.y*state.scale;
         const spriteX=state.x+px*state.scale, spriteY=state.y+py*state.scale;
-        if(state.preview&&avatar.complete&&avatar.naturalWidth){
+        if(state.preview&&avatarReady){
           avatarCtx.clearRect(0,0,32,48);avatarCtx.drawImage(avatar,sitFrame[p.direction]*32,0,32,48,0,0,32,48);
           if(p.visible){const pixels=avatarCtx.getImageData(0,0,32,48);for(let yy=0;yy<48;yy++)for(let xx=0;xx<32;xx++)if(p.visible[yy]?.[xx]==='0')pixels.data[(yy*32+xx)*4+3]=0;avatarCtx.putImageData(pixels,0,0);}
           ctx.drawImage(avatarCanvas,spriteX-16*state.scale,spriteY-24*state.scale,32*state.scale,48*state.scale);
@@ -182,6 +225,7 @@
     document.querySelector('#brushSize').addEventListener('input',e=>{state.brushSize=Number(e.target.value);document.querySelector('#brushValue').textContent=`${state.brushSize} px`;});
     document.querySelector('#hideBrush').addEventListener('click',()=>{state.brush=state.brush==='hide'?null:'hide';document.querySelector('#hideBrush').classList.toggle('active',state.brush==='hide');document.querySelector('#showBrush').classList.remove('active');});
     document.querySelector('#showBrush').addEventListener('click',()=>{state.brush=state.brush==='show'?null:'show';document.querySelector('#showBrush').classList.toggle('active',state.brush==='show');document.querySelector('#hideBrush').classList.remove('active');});
+    document.querySelector('#resetMask').addEventListener('click',()=>{if(state.selected<0){status.textContent='Selecione um assento primeiro';return;}remember();delete state.points[state.selected].visible;draw();updateStatus();});
     function nudgeShift(axis,amount){if(state.selected<0)return;remember();const p=state.points[state.selected];p.shift??=[...(sitShift[p.direction]||[0,0])];p.shift[axis]+=amount;draw();updateStatus();}
     document.querySelector('#shiftXMinus').addEventListener('click',()=>nudgeShift(0,-1));document.querySelector('#shiftXPlus').addEventListener('click',()=>nudgeShift(0,1));document.querySelector('#shiftYMinus').addEventListener('click',()=>nudgeShift(1,-1));document.querySelector('#shiftYPlus').addEventListener('click',()=>nudgeShift(1,1));
     document.querySelector('#setGroup').addEventListener('click',()=>{const ids=new Set([...state.selectedMany,...(state.selected>=0?[state.selected]:[])]),group=document.querySelector('#seatGroup').value;if(!ids.size){status.textContent='Selecione um ou mais assentos primeiro';return;}if(!group){status.textContent='Escolha explicitamente: cadeira normal, escritório, puff ou sofá';return;}remember();ids.forEach(i=>state.points[i].group=group);draw();status.textContent=`${ids.size} assentos marcados como ${document.querySelector('#seatGroup').selectedOptions[0].textContent}`;});
@@ -216,7 +260,7 @@
     document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return;}if((e.key==='Delete'||e.key==='Backspace')&&state.selected>=0)document.querySelector('#remove').click();});
     image.onload=async()=>{
       try {
-        const [seats,collision]=await Promise.all([fetch('/assets/map/seat-map.json').then(r=>r.json()),fetch('/assets/map/map-collision.json').then(r=>r.json())]);
+        const [seats,collision]=await Promise.all([fetch('/assets/map/seat-map.json?seatMapEditor='+Date.now(),{cache:'no-store'}).then(r=>r.json()),fetch('/assets/map/map-collision.json?seatMapEditor='+Date.now(),{cache:'no-store'}).then(r=>r.json())]);
         seatMapData=seats;tiledCollisionMap=collision;state.points=seats.seats.map(p=>({...p,existing:true}));
         const collisionLayer=collision.layers.find(l=>l.name==='Collision');collisionMap={width:collisionLayer.width,height:collisionLayer.height,tileWidth:collision.tilewidth,tileHeight:collision.tileheight,data:collisionLayer.data.slice()};
       }
@@ -224,7 +268,7 @@
       fit();updateStatus();
     };
     image.onerror=()=>status.textContent='Não carregou o mapa. Abra esta página pelo servidor localhost:5173.';
-    avatar.onload=draw;
+    prepareAvatar().catch(err=>{console.warn('Não foi possível montar o avatar novo no SeatMapper',err);status.textContent='O mapa abriu, mas a prévia do avatar novo não carregou.';});
     image.src='/assets/map/gather-map.png';
     window.addEventListener('resize',fit);
   </script>

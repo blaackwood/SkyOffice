@@ -5,6 +5,7 @@ import TableRestaurantIcon from '@mui/icons-material/TableRestaurant'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded'
 
 import { useAppSelector } from '../hooks'
 import { phaserEvents, Event } from '../events/EventCenter'
@@ -19,6 +20,19 @@ const ToolRail = styled.div`
   display: flex;
   flex-direction: column;
   gap: 3px;
+  padding: 5px;
+  border-radius: 10px;
+  background: #17191d;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .32);
+`
+
+const TopRail = styled.div`
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 35;
+  display: flex;
+  gap: 5px;
   padding: 5px;
   border-radius: 10px;
   background: #17191d;
@@ -69,7 +83,19 @@ export default function HelperButtonGroup() {
   if (!roomJoined) return null
 
   return (
-    <ToolRail aria-label="Controles do mapa">
+    <>
+      <TopRail aria-label="Atalhos">
+        <Tooltip title="Abrir RankEstudos" placement="left">
+          <ToolButton
+            type="button"
+            aria-label="Abrir RankEstudos em nova aba"
+            onClick={() => window.open(import.meta.env.VITE_RANKESTUDOS_URL || 'https://rankestudos.netlify.app/', '_blank', 'noopener,noreferrer')}
+          >
+            <EmojiEventsRoundedIcon />
+          </ToolButton>
+        </Tooltip>
+      </TopRail>
+      <ToolRail aria-label="Controles do mapa">
       <Tooltip title="Aumentar zoom" placement="left">
         <ToolButton type="button" aria-label="Aumentar zoom" onClick={() => game()?.adjustCameraZoom(0.2)}>
           <AddIcon />
@@ -101,6 +127,7 @@ export default function HelperButtonGroup() {
           </ToolButton>
         </Tooltip>
       </>}
-    </ToolRail>
+      </ToolRail>
+    </>
   )
 }

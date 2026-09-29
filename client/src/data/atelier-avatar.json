@@ -1,0 +1,5729 @@
+{
+  "name": "Atelier Avatar — Modular 4 Directions",
+  "version": "1.0.0",
+  "directions": [
+    "down",
+    "up",
+    "left",
+    "right"
+  ],
+  "rightMirrorsLeft": true,
+  "frame": {
+    "width": 128,
+    "height": 192,
+    "columns": 8,
+    "rows": 6,
+    "originX": 0.5,
+    "originY": 0.90625
+  },
+  "masterFrame": {
+    "width": 256,
+    "height": 384
+  },
+  "layerOrder": [
+    "skin",
+    "pants",
+    "shoes",
+    "top",
+    "jacket",
+    "hair",
+    "glasses",
+    "hat"
+  ],
+  "animations": {
+    "idle": {
+      "row": 0,
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "walk": {
+      "row": 1,
+      "frames": 8,
+      "fps": 12,
+      "loop": true
+    },
+    "run": {
+      "row": 2,
+      "frames": 8,
+      "fps": 16,
+      "loop": true
+    },
+    "wave": {
+      "row": 3,
+      "frames": 8,
+      "fps": 10,
+      "loop": false
+    },
+    "jump": {
+      "row": 4,
+      "frames": 8,
+      "fps": 12,
+      "loop": false
+    },
+    "celebrate": {
+      "row": 5,
+      "frames": 8,
+      "fps": 10,
+      "loop": false
+    }
+  },
+  "slots": {
+    "hair": [
+      "hair_01",
+      "hair_02",
+      "hair_03",
+      "hair_04",
+      "hair_05",
+      "hair_06",
+      "hair_07",
+      "hair_08",
+      "hair_09",
+      "hair_10",
+      "hair_11",
+      "hair_12",
+      "hair_13",
+      "hair_14",
+      "hair_15",
+      "hair_16"
+    ],
+    "top": [
+      "top_01",
+      "top_02",
+      "top_03",
+      "top_04",
+      "top_05",
+      "top_06",
+      "top_07",
+      "top_08",
+      "top_09",
+      "top_10",
+      "top_11",
+      "top_12",
+      "top_13",
+      "top_14",
+      "top_15",
+      "top_16"
+    ],
+    "jacket": [
+      "jacket_01",
+      "jacket_02",
+      "jacket_03",
+      "jacket_04",
+      "jacket_05",
+      "jacket_06",
+      "jacket_07",
+      "jacket_08",
+      "jacket_09",
+      "jacket_10",
+      "jacket_11",
+      "jacket_12",
+      "jacket_13",
+      "jacket_14",
+      "jacket_15",
+      "jacket_16"
+    ],
+    "pants": [
+      "pants_01",
+      "pants_02",
+      "pants_03",
+      "pants_04",
+      "pants_05",
+      "pants_06",
+      "pants_07",
+      "pants_08",
+      "pants_09",
+      "pants_10",
+      "pants_11",
+      "pants_12",
+      "pants_13",
+      "pants_14",
+      "pants_15",
+      "pants_16"
+    ],
+    "shoes": [
+      "shoes_01",
+      "shoes_02",
+      "shoes_03",
+      "shoes_04",
+      "shoes_05",
+      "shoes_06",
+      "shoes_07",
+      "shoes_08",
+      "shoes_09",
+      "shoes_10",
+      "shoes_11",
+      "shoes_12",
+      "shoes_13",
+      "shoes_14",
+      "shoes_15",
+      "shoes_16"
+    ],
+    "hat": [
+      "hat_01",
+      "hat_02",
+      "hat_03",
+      "hat_04",
+      "hat_05",
+      "hat_06",
+      "hat_07",
+      "hat_08"
+    ],
+    "glasses": [
+      "glasses_01",
+      "glasses_02",
+      "glasses_03",
+      "glasses_04",
+      "glasses_05",
+      "glasses_06",
+      "glasses_07",
+      "glasses_08"
+    ],
+    "skin": [
+      "skin_01",
+      "skin_02",
+      "skin_03",
+      "skin_04",
+      "skin_05",
+      "skin_06",
+      "skin_female_01",
+      "skin_female_02",
+      "skin_female_03",
+      "skin_female_04",
+      "skin_female_05",
+      "skin_female_06"
+    ]
+  },
+  "items": [
+    {
+      "id": "hair_01",
+      "slot": "hair",
+      "label": "Preto lateral",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_01.png",
+          "aligned": "aligned/down/hair/hair_01.png",
+          "sheet": "sheets/down/hair/hair_01.png",
+          "placement": {
+            "x": 57,
+            "y": 20,
+            "width": 142,
+            "height": 121
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_01.png",
+          "aligned": "aligned/up/hair/hair_01.png",
+          "sheet": "sheets/up/hair/hair_01.png",
+          "placement": {
+            "x": 57,
+            "y": 20,
+            "width": 142,
+            "height": 121
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_01.png",
+          "aligned": "aligned/left/hair/hair_01.png",
+          "sheet": "sheets/left/hair/hair_01.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_01.png",
+          "aligned": "aligned/right/hair/hair_01.png",
+          "sheet": "sheets/right/hair/hair_01.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_02",
+      "slot": "hair",
+      "label": "Castanho bagunçado",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_02.png",
+          "aligned": "aligned/down/hair/hair_02.png",
+          "sheet": "sheets/down/hair/hair_02.png",
+          "placement": {
+            "x": 56,
+            "y": 19,
+            "width": 144,
+            "height": 123
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_02.png",
+          "aligned": "aligned/up/hair/hair_02.png",
+          "sheet": "sheets/up/hair/hair_02.png",
+          "placement": {
+            "x": 56,
+            "y": 19,
+            "width": 144,
+            "height": 123
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_02.png",
+          "aligned": "aligned/left/hair/hair_02.png",
+          "sheet": "sheets/left/hair/hair_02.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_02.png",
+          "aligned": "aligned/right/hair/hair_02.png",
+          "sheet": "sheets/right/hair/hair_02.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_03",
+      "slot": "hair",
+      "label": "Cachos curtos",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_03.png",
+          "aligned": "aligned/down/hair/hair_03.png",
+          "sheet": "sheets/down/hair/hair_03.png",
+          "placement": {
+            "x": 56,
+            "y": 22,
+            "width": 144,
+            "height": 119
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_03.png",
+          "aligned": "aligned/up/hair/hair_03.png",
+          "sheet": "sheets/up/hair/hair_03.png",
+          "placement": {
+            "x": 56,
+            "y": 22,
+            "width": 144,
+            "height": 119
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_03.png",
+          "aligned": "aligned/left/hair/hair_03.png",
+          "sheet": "sheets/left/hair/hair_03.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_03.png",
+          "aligned": "aligned/right/hair/hair_03.png",
+          "sheet": "sheets/right/hair/hair_03.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_04",
+      "slot": "hair",
+      "label": "Loiro clássico",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_04.png",
+          "aligned": "aligned/down/hair/hair_04.png",
+          "sheet": "sheets/down/hair/hair_04.png",
+          "placement": {
+            "x": 56,
+            "y": 20,
+            "width": 144,
+            "height": 121
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_04.png",
+          "aligned": "aligned/up/hair/hair_04.png",
+          "sheet": "sheets/up/hair/hair_04.png",
+          "placement": {
+            "x": 56,
+            "y": 20,
+            "width": 144,
+            "height": 121
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_04.png",
+          "aligned": "aligned/left/hair/hair_04.png",
+          "sheet": "sheets/left/hair/hair_04.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_04.png",
+          "aligned": "aligned/right/hair/hair_04.png",
+          "sheet": "sheets/right/hair/hair_04.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_05",
+      "slot": "hair",
+      "label": "Chanel ruivo",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_05.png",
+          "aligned": "aligned/down/hair/hair_05.png",
+          "sheet": "sheets/down/hair/hair_05.png",
+          "placement": {
+            "x": 55,
+            "y": 24,
+            "width": 146,
+            "height": 135
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_05.png",
+          "aligned": "aligned/up/hair/hair_05.png",
+          "sheet": "sheets/up/hair/hair_05.png",
+          "placement": {
+            "x": 55,
+            "y": 24,
+            "width": 146,
+            "height": 135
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_05.png",
+          "aligned": "aligned/left/hair/hair_05.png",
+          "sheet": "sheets/left/hair/hair_05.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 135
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_05.png",
+          "aligned": "aligned/right/hair/hair_05.png",
+          "sheet": "sheets/right/hair/hair_05.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 135
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_06",
+      "slot": "hair",
+      "label": "Longo preto",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_06.png",
+          "aligned": "aligned/down/hair/hair_06.png",
+          "sheet": "sheets/down/hair/hair_06.png",
+          "placement": {
+            "x": 50,
+            "y": 20,
+            "width": 156,
+            "height": 182
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_06.png",
+          "aligned": "aligned/up/hair/hair_06.png",
+          "sheet": "sheets/up/hair/hair_06.png",
+          "placement": {
+            "x": 50,
+            "y": 20,
+            "width": 156,
+            "height": 182
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_06.png",
+          "aligned": "aligned/left/hair/hair_06.png",
+          "sheet": "sheets/left/hair/hair_06.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 182
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_06.png",
+          "aligned": "aligned/right/hair/hair_06.png",
+          "sheet": "sheets/right/hair/hair_06.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 182
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_07",
+      "slot": "hair",
+      "label": "Degradê texturizado",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_07.png",
+          "aligned": "aligned/down/hair/hair_07.png",
+          "sheet": "sheets/down/hair/hair_07.png",
+          "placement": {
+            "x": 64,
+            "y": 25,
+            "width": 128,
+            "height": 104
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_07.png",
+          "aligned": "aligned/up/hair/hair_07.png",
+          "sheet": "sheets/up/hair/hair_07.png",
+          "placement": {
+            "x": 64,
+            "y": 25,
+            "width": 128,
+            "height": 104
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_07.png",
+          "aligned": "aligned/left/hair/hair_07.png",
+          "sheet": "sheets/left/hair/hair_07.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_07.png",
+          "aligned": "aligned/right/hair/hair_07.png",
+          "sheet": "sheets/right/hair/hair_07.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_08",
+      "slot": "hair",
+      "label": "Ondulado castanho",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_08.png",
+          "aligned": "aligned/down/hair/hair_08.png",
+          "sheet": "sheets/down/hair/hair_08.png",
+          "placement": {
+            "x": 54,
+            "y": 19,
+            "width": 148,
+            "height": 127
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_08.png",
+          "aligned": "aligned/up/hair/hair_08.png",
+          "sheet": "sheets/up/hair/hair_08.png",
+          "placement": {
+            "x": 54,
+            "y": 19,
+            "width": 148,
+            "height": 127
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_08.png",
+          "aligned": "aligned/left/hair/hair_08.png",
+          "sheet": "sheets/left/hair/hair_08.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_08.png",
+          "aligned": "aligned/right/hair/hair_08.png",
+          "sheet": "sheets/right/hair/hair_08.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_09",
+      "slot": "hair",
+      "label": "Rabo de cavalo",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_09.png",
+          "aligned": "aligned/down/hair/hair_09.png",
+          "sheet": "sheets/down/hair/hair_09.png",
+          "placement": {
+            "x": 53,
+            "y": 18,
+            "width": 155,
+            "height": 170
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_09.png",
+          "aligned": "aligned/up/hair/hair_09.png",
+          "sheet": "sheets/up/hair/hair_09.png",
+          "placement": {
+            "x": 53,
+            "y": 18,
+            "width": 155,
+            "height": 170
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_09.png",
+          "aligned": "aligned/left/hair/hair_09.png",
+          "sheet": "sheets/left/hair/hair_09.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 170
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_09.png",
+          "aligned": "aligned/right/hair/hair_09.png",
+          "sheet": "sheets/right/hair/hair_09.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 170
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_10",
+      "slot": "hair",
+      "label": "Prata desconectado",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_10.png",
+          "aligned": "aligned/down/hair/hair_10.png",
+          "sheet": "sheets/down/hair/hair_10.png",
+          "placement": {
+            "x": 55,
+            "y": 19,
+            "width": 146,
+            "height": 121
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_10.png",
+          "aligned": "aligned/up/hair/hair_10.png",
+          "sheet": "sheets/up/hair/hair_10.png",
+          "placement": {
+            "x": 55,
+            "y": 19,
+            "width": 146,
+            "height": 121
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_10.png",
+          "aligned": "aligned/left/hair/hair_10.png",
+          "sheet": "sheets/left/hair/hair_10.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_10.png",
+          "aligned": "aligned/right/hair/hair_10.png",
+          "sheet": "sheets/right/hair/hair_10.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_11",
+      "slot": "hair",
+      "label": "Castanho em camadas",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_11.png",
+          "aligned": "aligned/down/hair/hair_11.png",
+          "sheet": "sheets/down/hair/hair_11.png",
+          "placement": {
+            "x": 54,
+            "y": 20,
+            "width": 148,
+            "height": 122
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_11.png",
+          "aligned": "aligned/up/hair/hair_11.png",
+          "sheet": "sheets/up/hair/hair_11.png",
+          "placement": {
+            "x": 54,
+            "y": 20,
+            "width": 148,
+            "height": 122
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_11.png",
+          "aligned": "aligned/left/hair/hair_11.png",
+          "sheet": "sheets/left/hair/hair_11.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_11.png",
+          "aligned": "aligned/right/hair/hair_11.png",
+          "sheet": "sheets/right/hair/hair_11.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_12",
+      "slot": "hair",
+      "label": "Chanel loiro",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_12.png",
+          "aligned": "aligned/down/hair/hair_12.png",
+          "sheet": "sheets/down/hair/hair_12.png",
+          "placement": {
+            "x": 50,
+            "y": 21,
+            "width": 156,
+            "height": 152
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_12.png",
+          "aligned": "aligned/up/hair/hair_12.png",
+          "sheet": "sheets/up/hair/hair_12.png",
+          "placement": {
+            "x": 50,
+            "y": 21,
+            "width": 156,
+            "height": 152
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_12.png",
+          "aligned": "aligned/left/hair/hair_12.png",
+          "sheet": "sheets/left/hair/hair_12.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 152
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_12.png",
+          "aligned": "aligned/right/hair/hair_12.png",
+          "sheet": "sheets/right/hair/hair_12.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 152
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_13",
+      "slot": "hair",
+      "label": "Castanho curto",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_13.png",
+          "aligned": "aligned/down/hair/hair_13.png",
+          "sheet": "sheets/down/hair/hair_13.png",
+          "placement": {
+            "x": 64,
+            "y": 27,
+            "width": 128,
+            "height": 95
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_13.png",
+          "aligned": "aligned/up/hair/hair_13.png",
+          "sheet": "sheets/up/hair/hair_13.png",
+          "placement": {
+            "x": 64,
+            "y": 27,
+            "width": 128,
+            "height": 95
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_13.png",
+          "aligned": "aligned/left/hair/hair_13.png",
+          "sheet": "sheets/left/hair/hair_13.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_13.png",
+          "aligned": "aligned/right/hair/hair_13.png",
+          "sheet": "sheets/right/hair/hair_13.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_14",
+      "slot": "hair",
+      "label": "Ondulado preto",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_14.png",
+          "aligned": "aligned/down/hair/hair_14.png",
+          "sheet": "sheets/down/hair/hair_14.png",
+          "placement": {
+            "x": 55,
+            "y": 19,
+            "width": 146,
+            "height": 130
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_14.png",
+          "aligned": "aligned/up/hair/hair_14.png",
+          "sheet": "sheets/up/hair/hair_14.png",
+          "placement": {
+            "x": 55,
+            "y": 19,
+            "width": 146,
+            "height": 130
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_14.png",
+          "aligned": "aligned/left/hair/hair_14.png",
+          "sheet": "sheets/left/hair/hair_14.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_14.png",
+          "aligned": "aligned/right/hair/hair_14.png",
+          "sheet": "sheets/right/hair/hair_14.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_15",
+      "slot": "hair",
+      "label": "Afro",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_15.png",
+          "aligned": "aligned/down/hair/hair_15.png",
+          "sheet": "sheets/down/hair/hair_15.png",
+          "placement": {
+            "x": 51,
+            "y": 16,
+            "width": 154,
+            "height": 139
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_15.png",
+          "aligned": "aligned/up/hair/hair_15.png",
+          "sheet": "sheets/up/hair/hair_15.png",
+          "placement": {
+            "x": 51,
+            "y": 16,
+            "width": 154,
+            "height": 139
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_15.png",
+          "aligned": "aligned/left/hair/hair_15.png",
+          "sheet": "sheets/left/hair/hair_15.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_15.png",
+          "aligned": "aligned/right/hair/hair_15.png",
+          "sheet": "sheets/right/hair/hair_15.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "hair_16",
+      "slot": "hair",
+      "label": "Longo ruivo",
+      "directions": {
+        "down": {
+          "item": "items/down/hair/hair_16.png",
+          "aligned": "aligned/down/hair/hair_16.png",
+          "sheet": "sheets/down/hair/hair_16.png",
+          "placement": {
+            "x": 48,
+            "y": 17,
+            "width": 160,
+            "height": 189
+          }
+        },
+        "up": {
+          "item": "items/up/hair/hair_16.png",
+          "aligned": "aligned/up/hair/hair_16.png",
+          "sheet": "sheets/up/hair/hair_16.png",
+          "placement": {
+            "x": 48,
+            "y": 17,
+            "width": 160,
+            "height": 189
+          }
+        },
+        "left": {
+          "item": "items/left/hair/hair_16.png",
+          "aligned": "aligned/left/hair/hair_16.png",
+          "sheet": "sheets/left/hair/hair_16.png",
+          "placement": {
+            "x": 67,
+            "y": 20,
+            "width": 127,
+            "height": 189
+          }
+        },
+        "right": {
+          "item": "items/right/hair/hair_16.png",
+          "aligned": "aligned/right/hair/hair_16.png",
+          "sheet": "sheets/right/hair/hair_16.png",
+          "placement": {
+            "x": 62,
+            "y": 20,
+            "width": 127,
+            "height": 189
+          }
+        }
+      }
+    },
+    {
+      "id": "top_01",
+      "slot": "top",
+      "label": "Camiseta carvão",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_01.png",
+          "aligned": "aligned/down/top/top_01.png",
+          "sheet": "sheets/down/top/top_01.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_01.png",
+          "aligned": "aligned/up/top/top_01.png",
+          "sheet": "sheets/up/top/top_01.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_01.png",
+          "aligned": "aligned/left/top/top_01.png",
+          "sheet": "sheets/left/top/top_01.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_01.png",
+          "aligned": "aligned/right/top/top_01.png",
+          "sheet": "sheets/right/top/top_01.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        }
+      }
+    },
+    {
+      "id": "top_02",
+      "slot": "top",
+      "label": "Camiseta creme",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_02.png",
+          "aligned": "aligned/down/top/top_02.png",
+          "sheet": "sheets/down/top/top_02.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_02.png",
+          "aligned": "aligned/up/top/top_02.png",
+          "sheet": "sheets/up/top/top_02.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_02.png",
+          "aligned": "aligned/left/top/top_02.png",
+          "sheet": "sheets/left/top/top_02.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_02.png",
+          "aligned": "aligned/right/top/top_02.png",
+          "sheet": "sheets/right/top/top_02.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        }
+      }
+    },
+    {
+      "id": "top_03",
+      "slot": "top",
+      "label": "Moletom verde",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_03.png",
+          "aligned": "aligned/down/top/top_03.png",
+          "sheet": "sheets/down/top/top_03.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_03.png",
+          "aligned": "aligned/up/top/top_03.png",
+          "sheet": "sheets/up/top/top_03.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_03.png",
+          "aligned": "aligned/left/top/top_03.png",
+          "sheet": "sheets/left/top/top_03.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_03.png",
+          "aligned": "aligned/right/top/top_03.png",
+          "sheet": "sheets/right/top/top_03.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "top_04",
+      "slot": "top",
+      "label": "Camisa e gravata",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_04.png",
+          "aligned": "aligned/down/top/top_04.png",
+          "sheet": "sheets/down/top/top_04.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_04.png",
+          "aligned": "aligned/up/top/top_04.png",
+          "sheet": "sheets/up/top/top_04.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_04.png",
+          "aligned": "aligned/left/top/top_04.png",
+          "sheet": "sheets/left/top/top_04.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_04.png",
+          "aligned": "aligned/right/top/top_04.png",
+          "sheet": "sheets/right/top/top_04.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "top_05",
+      "slot": "top",
+      "label": "Tricô creme",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_05.png",
+          "aligned": "aligned/down/top/top_05.png",
+          "sheet": "sheets/down/top/top_05.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_05.png",
+          "aligned": "aligned/up/top/top_05.png",
+          "sheet": "sheets/up/top/top_05.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_05.png",
+          "aligned": "aligned/left/top/top_05.png",
+          "sheet": "sheets/left/top/top_05.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_05.png",
+          "aligned": "aligned/right/top/top_05.png",
+          "sheet": "sheets/right/top/top_05.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "top_06",
+      "slot": "top",
+      "label": "Gola alta preta",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_06.png",
+          "aligned": "aligned/down/top/top_06.png",
+          "sheet": "sheets/down/top/top_06.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_06.png",
+          "aligned": "aligned/up/top/top_06.png",
+          "sheet": "sheets/up/top/top_06.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_06.png",
+          "aligned": "aligned/left/top/top_06.png",
+          "sheet": "sheets/left/top/top_06.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_06.png",
+          "aligned": "aligned/right/top/top_06.png",
+          "sheet": "sheets/right/top/top_06.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "top_07",
+      "slot": "top",
+      "label": "Scrub verde-petróleo",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_07.png",
+          "aligned": "aligned/down/top/top_07.png",
+          "sheet": "sheets/down/top/top_07.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_07.png",
+          "aligned": "aligned/up/top/top_07.png",
+          "sheet": "sheets/up/top/top_07.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_07.png",
+          "aligned": "aligned/left/top/top_07.png",
+          "sheet": "sheets/left/top/top_07.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_07.png",
+          "aligned": "aligned/right/top/top_07.png",
+          "sheet": "sheets/right/top/top_07.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        }
+      }
+    },
+    {
+      "id": "top_08",
+      "slot": "top",
+      "label": "Camiseta de trabalho",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_08.png",
+          "aligned": "aligned/down/top/top_08.png",
+          "sheet": "sheets/down/top/top_08.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_08.png",
+          "aligned": "aligned/up/top/top_08.png",
+          "sheet": "sheets/up/top/top_08.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_08.png",
+          "aligned": "aligned/left/top/top_08.png",
+          "sheet": "sheets/left/top/top_08.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_08.png",
+          "aligned": "aligned/right/top/top_08.png",
+          "sheet": "sheets/right/top/top_08.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        }
+      }
+    },
+    {
+      "id": "top_09",
+      "slot": "top",
+      "label": "Flanela xadrez",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_09.png",
+          "aligned": "aligned/down/top/top_09.png",
+          "sheet": "sheets/down/top/top_09.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_09.png",
+          "aligned": "aligned/up/top/top_09.png",
+          "sheet": "sheets/up/top/top_09.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_09.png",
+          "aligned": "aligned/left/top/top_09.png",
+          "sheet": "sheets/left/top/top_09.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_09.png",
+          "aligned": "aligned/right/top/top_09.png",
+          "sheet": "sheets/right/top/top_09.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "top_10",
+      "slot": "top",
+      "label": "Blusa técnica",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_10.png",
+          "aligned": "aligned/down/top/top_10.png",
+          "sheet": "sheets/down/top/top_10.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_10.png",
+          "aligned": "aligned/up/top/top_10.png",
+          "sheet": "sheets/up/top/top_10.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_10.png",
+          "aligned": "aligned/left/top/top_10.png",
+          "sheet": "sheets/left/top/top_10.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_10.png",
+          "aligned": "aligned/right/top/top_10.png",
+          "sheet": "sheets/right/top/top_10.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "top_11",
+      "slot": "top",
+      "label": "Henley areia",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_11.png",
+          "aligned": "aligned/down/top/top_11.png",
+          "sheet": "sheets/down/top/top_11.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_11.png",
+          "aligned": "aligned/up/top/top_11.png",
+          "sheet": "sheets/up/top/top_11.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_11.png",
+          "aligned": "aligned/left/top/top_11.png",
+          "sheet": "sheets/left/top/top_11.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_11.png",
+          "aligned": "aligned/right/top/top_11.png",
+          "sheet": "sheets/right/top/top_11.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        }
+      }
+    },
+    {
+      "id": "top_12",
+      "slot": "top",
+      "label": "Camisa lavanda",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_12.png",
+          "aligned": "aligned/down/top/top_12.png",
+          "sheet": "sheets/down/top/top_12.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_12.png",
+          "aligned": "aligned/up/top/top_12.png",
+          "sheet": "sheets/up/top/top_12.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_12.png",
+          "aligned": "aligned/left/top/top_12.png",
+          "sheet": "sheets/left/top/top_12.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_12.png",
+          "aligned": "aligned/right/top/top_12.png",
+          "sheet": "sheets/right/top/top_12.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "top_13",
+      "slot": "top",
+      "label": "Camiseta oliva",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_13.png",
+          "aligned": "aligned/down/top/top_13.png",
+          "sheet": "sheets/down/top/top_13.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_13.png",
+          "aligned": "aligned/up/top/top_13.png",
+          "sheet": "sheets/up/top/top_13.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_13.png",
+          "aligned": "aligned/left/top/top_13.png",
+          "sheet": "sheets/left/top/top_13.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_13.png",
+          "aligned": "aligned/right/top/top_13.png",
+          "sheet": "sheets/right/top/top_13.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        }
+      }
+    },
+    {
+      "id": "top_14",
+      "slot": "top",
+      "label": "Dólmã de chef",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_14.png",
+          "aligned": "aligned/down/top/top_14.png",
+          "sheet": "sheets/down/top/top_14.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_14.png",
+          "aligned": "aligned/up/top/top_14.png",
+          "sheet": "sheets/up/top/top_14.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_14.png",
+          "aligned": "aligned/left/top/top_14.png",
+          "sheet": "sheets/left/top/top_14.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_14.png",
+          "aligned": "aligned/right/top/top_14.png",
+          "sheet": "sheets/right/top/top_14.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        }
+      }
+    },
+    {
+      "id": "top_15",
+      "slot": "top",
+      "label": "Blusa listrada",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_15.png",
+          "aligned": "aligned/down/top/top_15.png",
+          "sheet": "sheets/down/top/top_15.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_15.png",
+          "aligned": "aligned/up/top/top_15.png",
+          "sheet": "sheets/up/top/top_15.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_15.png",
+          "aligned": "aligned/left/top/top_15.png",
+          "sheet": "sheets/left/top/top_15.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_15.png",
+          "aligned": "aligned/right/top/top_15.png",
+          "sheet": "sheets/right/top/top_15.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "top_16",
+      "slot": "top",
+      "label": "Camiseta esportiva",
+      "directions": {
+        "down": {
+          "item": "items/down/top/top_16.png",
+          "aligned": "aligned/down/top/top_16.png",
+          "sheet": "sheets/down/top/top_16.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "up": {
+          "item": "items/up/top/top_16.png",
+          "aligned": "aligned/up/top/top_16.png",
+          "sheet": "sheets/up/top/top_16.png",
+          "placement": {
+            "x": 54,
+            "y": 147,
+            "width": 148,
+            "height": 81
+          }
+        },
+        "left": {
+          "item": "items/left/top/top_16.png",
+          "aligned": "aligned/left/top/top_16.png",
+          "sheet": "sheets/left/top/top_16.png",
+          "placement": {
+            "x": 91,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        },
+        "right": {
+          "item": "items/right/top/top_16.png",
+          "aligned": "aligned/right/top/top_16.png",
+          "sheet": "sheets/right/top/top_16.png",
+          "placement": {
+            "x": 81,
+            "y": 147,
+            "width": 84,
+            "height": 81
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_01",
+      "slot": "jacket",
+      "label": "Jaqueta biker vinho",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_01.png",
+          "aligned": "aligned/down/jacket/jacket_01.png",
+          "sheet": "sheets/down/jacket/jacket_01.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_01.png",
+          "aligned": "aligned/up/jacket/jacket_01.png",
+          "sheet": "sheets/up/jacket/jacket_01.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_01.png",
+          "aligned": "aligned/left/jacket/jacket_01.png",
+          "sheet": "sheets/left/jacket/jacket_01.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_01.png",
+          "aligned": "aligned/right/jacket/jacket_01.png",
+          "sheet": "sheets/right/jacket/jacket_01.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_02",
+      "slot": "jacket",
+      "label": "Jaqueta jeans",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_02.png",
+          "aligned": "aligned/down/jacket/jacket_02.png",
+          "sheet": "sheets/down/jacket/jacket_02.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_02.png",
+          "aligned": "aligned/up/jacket/jacket_02.png",
+          "sheet": "sheets/up/jacket/jacket_02.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_02.png",
+          "aligned": "aligned/left/jacket/jacket_02.png",
+          "sheet": "sheets/left/jacket/jacket_02.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_02.png",
+          "aligned": "aligned/right/jacket/jacket_02.png",
+          "sheet": "sheets/right/jacket/jacket_02.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_03",
+      "slot": "jacket",
+      "label": "Bomber verde",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_03.png",
+          "aligned": "aligned/down/jacket/jacket_03.png",
+          "sheet": "sheets/down/jacket/jacket_03.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_03.png",
+          "aligned": "aligned/up/jacket/jacket_03.png",
+          "sheet": "sheets/up/jacket/jacket_03.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_03.png",
+          "aligned": "aligned/left/jacket/jacket_03.png",
+          "sheet": "sheets/left/jacket/jacket_03.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_03.png",
+          "aligned": "aligned/right/jacket/jacket_03.png",
+          "sheet": "sheets/right/jacket/jacket_03.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_04",
+      "slot": "jacket",
+      "label": "Blazer marinho",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_04.png",
+          "aligned": "aligned/down/jacket/jacket_04.png",
+          "sheet": "sheets/down/jacket/jacket_04.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_04.png",
+          "aligned": "aligned/up/jacket/jacket_04.png",
+          "sheet": "sheets/up/jacket/jacket_04.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_04.png",
+          "aligned": "aligned/left/jacket/jacket_04.png",
+          "sheet": "sheets/left/jacket/jacket_04.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_04.png",
+          "aligned": "aligned/right/jacket/jacket_04.png",
+          "sheet": "sheets/right/jacket/jacket_04.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_05",
+      "slot": "jacket",
+      "label": "Cardigã de tricô",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_05.png",
+          "aligned": "aligned/down/jacket/jacket_05.png",
+          "sheet": "sheets/down/jacket/jacket_05.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_05.png",
+          "aligned": "aligned/up/jacket/jacket_05.png",
+          "sheet": "sheets/up/jacket/jacket_05.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_05.png",
+          "aligned": "aligned/left/jacket/jacket_05.png",
+          "sheet": "sheets/left/jacket/jacket_05.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_05.png",
+          "aligned": "aligned/right/jacket/jacket_05.png",
+          "sheet": "sheets/right/jacket/jacket_05.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_06",
+      "slot": "jacket",
+      "label": "Trench camel",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_06.png",
+          "aligned": "aligned/down/jacket/jacket_06.png",
+          "sheet": "sheets/down/jacket/jacket_06.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 125
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_06.png",
+          "aligned": "aligned/up/jacket/jacket_06.png",
+          "sheet": "sheets/up/jacket/jacket_06.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 125
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_06.png",
+          "aligned": "aligned/left/jacket/jacket_06.png",
+          "sheet": "sheets/left/jacket/jacket_06.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_06.png",
+          "aligned": "aligned/right/jacket/jacket_06.png",
+          "sheet": "sheets/right/jacket/jacket_06.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_07",
+      "slot": "jacket",
+      "label": "Jaleco",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_07.png",
+          "aligned": "aligned/down/jacket/jacket_07.png",
+          "sheet": "sheets/down/jacket/jacket_07.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 125
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_07.png",
+          "aligned": "aligned/up/jacket/jacket_07.png",
+          "sheet": "sheets/up/jacket/jacket_07.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 125
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_07.png",
+          "aligned": "aligned/left/jacket/jacket_07.png",
+          "sheet": "sheets/left/jacket/jacket_07.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_07.png",
+          "aligned": "aligned/right/jacket/jacket_07.png",
+          "sheet": "sheets/right/jacket/jacket_07.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_08",
+      "slot": "jacket",
+      "label": "Colete refletivo",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_08.png",
+          "aligned": "aligned/down/jacket/jacket_08.png",
+          "sheet": "sheets/down/jacket/jacket_08.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_08.png",
+          "aligned": "aligned/up/jacket/jacket_08.png",
+          "sheet": "sheets/up/jacket/jacket_08.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_08.png",
+          "aligned": "aligned/left/jacket/jacket_08.png",
+          "sheet": "sheets/left/jacket/jacket_08.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_08.png",
+          "aligned": "aligned/right/jacket/jacket_08.png",
+          "sheet": "sheets/right/jacket/jacket_08.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_09",
+      "slot": "jacket",
+      "label": "Jaqueta de veludo",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_09.png",
+          "aligned": "aligned/down/jacket/jacket_09.png",
+          "sheet": "sheets/down/jacket/jacket_09.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_09.png",
+          "aligned": "aligned/up/jacket/jacket_09.png",
+          "sheet": "sheets/up/jacket/jacket_09.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_09.png",
+          "aligned": "aligned/left/jacket/jacket_09.png",
+          "sheet": "sheets/left/jacket/jacket_09.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_09.png",
+          "aligned": "aligned/right/jacket/jacket_09.png",
+          "sheet": "sheets/right/jacket/jacket_09.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_10",
+      "slot": "jacket",
+      "label": "Jaqueta técnica",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_10.png",
+          "aligned": "aligned/down/jacket/jacket_10.png",
+          "sheet": "sheets/down/jacket/jacket_10.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_10.png",
+          "aligned": "aligned/up/jacket/jacket_10.png",
+          "sheet": "sheets/up/jacket/jacket_10.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_10.png",
+          "aligned": "aligned/left/jacket/jacket_10.png",
+          "sheet": "sheets/left/jacket/jacket_10.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_10.png",
+          "aligned": "aligned/right/jacket/jacket_10.png",
+          "sheet": "sheets/right/jacket/jacket_10.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_11",
+      "slot": "jacket",
+      "label": "Jaqueta varsity",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_11.png",
+          "aligned": "aligned/down/jacket/jacket_11.png",
+          "sheet": "sheets/down/jacket/jacket_11.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_11.png",
+          "aligned": "aligned/up/jacket/jacket_11.png",
+          "sheet": "sheets/up/jacket/jacket_11.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_11.png",
+          "aligned": "aligned/left/jacket/jacket_11.png",
+          "sheet": "sheets/left/jacket/jacket_11.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_11.png",
+          "aligned": "aligned/right/jacket/jacket_11.png",
+          "sheet": "sheets/right/jacket/jacket_11.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_12",
+      "slot": "jacket",
+      "label": "Cardigã curto",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_12.png",
+          "aligned": "aligned/down/jacket/jacket_12.png",
+          "sheet": "sheets/down/jacket/jacket_12.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_12.png",
+          "aligned": "aligned/up/jacket/jacket_12.png",
+          "sheet": "sheets/up/jacket/jacket_12.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_12.png",
+          "aligned": "aligned/left/jacket/jacket_12.png",
+          "sheet": "sheets/left/jacket/jacket_12.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_12.png",
+          "aligned": "aligned/right/jacket/jacket_12.png",
+          "sheet": "sheets/right/jacket/jacket_12.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_13",
+      "slot": "jacket",
+      "label": "Jaqueta de campo",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_13.png",
+          "aligned": "aligned/down/jacket/jacket_13.png",
+          "sheet": "sheets/down/jacket/jacket_13.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_13.png",
+          "aligned": "aligned/up/jacket/jacket_13.png",
+          "sheet": "sheets/up/jacket/jacket_13.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_13.png",
+          "aligned": "aligned/left/jacket/jacket_13.png",
+          "sheet": "sheets/left/jacket/jacket_13.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_13.png",
+          "aligned": "aligned/right/jacket/jacket_13.png",
+          "sheet": "sheets/right/jacket/jacket_13.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_14",
+      "slot": "jacket",
+      "label": "Colete social",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_14.png",
+          "aligned": "aligned/down/jacket/jacket_14.png",
+          "sheet": "sheets/down/jacket/jacket_14.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_14.png",
+          "aligned": "aligned/up/jacket/jacket_14.png",
+          "sheet": "sheets/up/jacket/jacket_14.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_14.png",
+          "aligned": "aligned/left/jacket/jacket_14.png",
+          "sheet": "sheets/left/jacket/jacket_14.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_14.png",
+          "aligned": "aligned/right/jacket/jacket_14.png",
+          "sheet": "sheets/right/jacket/jacket_14.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_15",
+      "slot": "jacket",
+      "label": "Capa de chuva",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_15.png",
+          "aligned": "aligned/down/jacket/jacket_15.png",
+          "sheet": "sheets/down/jacket/jacket_15.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 125
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_15.png",
+          "aligned": "aligned/up/jacket/jacket_15.png",
+          "sheet": "sheets/up/jacket/jacket_15.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 125
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_15.png",
+          "aligned": "aligned/left/jacket/jacket_15.png",
+          "sheet": "sheets/left/jacket/jacket_15.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 125
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_15.png",
+          "aligned": "aligned/right/jacket/jacket_15.png",
+          "sheet": "sheets/right/jacket/jacket_15.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 125
+          }
+        }
+      }
+    },
+    {
+      "id": "jacket_16",
+      "slot": "jacket",
+      "label": "Jaqueta esportiva",
+      "directions": {
+        "down": {
+          "item": "items/down/jacket/jacket_16.png",
+          "aligned": "aligned/down/jacket/jacket_16.png",
+          "sheet": "sheets/down/jacket/jacket_16.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "up": {
+          "item": "items/up/jacket/jacket_16.png",
+          "aligned": "aligned/up/jacket/jacket_16.png",
+          "sheet": "sheets/up/jacket/jacket_16.png",
+          "placement": {
+            "x": 50,
+            "y": 143,
+            "width": 156,
+            "height": 105
+          }
+        },
+        "left": {
+          "item": "items/left/jacket/jacket_16.png",
+          "aligned": "aligned/left/jacket/jacket_16.png",
+          "sheet": "sheets/left/jacket/jacket_16.png",
+          "placement": {
+            "x": 88,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        },
+        "right": {
+          "item": "items/right/jacket/jacket_16.png",
+          "aligned": "aligned/right/jacket/jacket_16.png",
+          "sheet": "sheets/right/jacket/jacket_16.png",
+          "placement": {
+            "x": 77,
+            "y": 143,
+            "width": 91,
+            "height": 105
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_01",
+      "slot": "pants",
+      "label": "Jeans carvão",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_01.png",
+          "aligned": "aligned/down/pants/pants_01.png",
+          "sheet": "sheets/down/pants/pants_01.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_01.png",
+          "aligned": "aligned/up/pants/pants_01.png",
+          "sheet": "sheets/up/pants/pants_01.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_01.png",
+          "aligned": "aligned/left/pants/pants_01.png",
+          "sheet": "sheets/left/pants/pants_01.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_01.png",
+          "aligned": "aligned/right/pants/pants_01.png",
+          "sheet": "sheets/right/pants/pants_01.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_02",
+      "slot": "pants",
+      "label": "Chino bege",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_02.png",
+          "aligned": "aligned/down/pants/pants_02.png",
+          "sheet": "sheets/down/pants/pants_02.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_02.png",
+          "aligned": "aligned/up/pants/pants_02.png",
+          "sheet": "sheets/up/pants/pants_02.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_02.png",
+          "aligned": "aligned/left/pants/pants_02.png",
+          "sheet": "sheets/left/pants/pants_02.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_02.png",
+          "aligned": "aligned/right/pants/pants_02.png",
+          "sheet": "sheets/right/pants/pants_02.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_03",
+      "slot": "pants",
+      "label": "Cargo cinza",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_03.png",
+          "aligned": "aligned/down/pants/pants_03.png",
+          "sheet": "sheets/down/pants/pants_03.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_03.png",
+          "aligned": "aligned/up/pants/pants_03.png",
+          "sheet": "sheets/up/pants/pants_03.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_03.png",
+          "aligned": "aligned/left/pants/pants_03.png",
+          "sheet": "sheets/left/pants/pants_03.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_03.png",
+          "aligned": "aligned/right/pants/pants_03.png",
+          "sheet": "sheets/right/pants/pants_03.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_04",
+      "slot": "pants",
+      "label": "Alfaiataria marinho",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_04.png",
+          "aligned": "aligned/down/pants/pants_04.png",
+          "sheet": "sheets/down/pants/pants_04.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_04.png",
+          "aligned": "aligned/up/pants/pants_04.png",
+          "sheet": "sheets/up/pants/pants_04.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_04.png",
+          "aligned": "aligned/left/pants/pants_04.png",
+          "sheet": "sheets/left/pants/pants_04.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_04.png",
+          "aligned": "aligned/right/pants/pants_04.png",
+          "sheet": "sheets/right/pants/pants_04.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_05",
+      "slot": "pants",
+      "label": "Veludo ferrugem",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_05.png",
+          "aligned": "aligned/down/pants/pants_05.png",
+          "sheet": "sheets/down/pants/pants_05.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_05.png",
+          "aligned": "aligned/up/pants/pants_05.png",
+          "sheet": "sheets/up/pants/pants_05.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_05.png",
+          "aligned": "aligned/left/pants/pants_05.png",
+          "sheet": "sheets/left/pants/pants_05.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_05.png",
+          "aligned": "aligned/right/pants/pants_05.png",
+          "sheet": "sheets/right/pants/pants_05.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_06",
+      "slot": "pants",
+      "label": "Jeans preto",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_06.png",
+          "aligned": "aligned/down/pants/pants_06.png",
+          "sheet": "sheets/down/pants/pants_06.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_06.png",
+          "aligned": "aligned/up/pants/pants_06.png",
+          "sheet": "sheets/up/pants/pants_06.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_06.png",
+          "aligned": "aligned/left/pants/pants_06.png",
+          "sheet": "sheets/left/pants/pants_06.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_06.png",
+          "aligned": "aligned/right/pants/pants_06.png",
+          "sheet": "sheets/right/pants/pants_06.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_07",
+      "slot": "pants",
+      "label": "Calça de scrub",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_07.png",
+          "aligned": "aligned/down/pants/pants_07.png",
+          "sheet": "sheets/down/pants/pants_07.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_07.png",
+          "aligned": "aligned/up/pants/pants_07.png",
+          "sheet": "sheets/up/pants/pants_07.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_07.png",
+          "aligned": "aligned/left/pants/pants_07.png",
+          "sheet": "sheets/left/pants/pants_07.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_07.png",
+          "aligned": "aligned/right/pants/pants_07.png",
+          "sheet": "sheets/right/pants/pants_07.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_08",
+      "slot": "pants",
+      "label": "Calça de trabalho",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_08.png",
+          "aligned": "aligned/down/pants/pants_08.png",
+          "sheet": "sheets/down/pants/pants_08.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_08.png",
+          "aligned": "aligned/up/pants/pants_08.png",
+          "sheet": "sheets/up/pants/pants_08.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_08.png",
+          "aligned": "aligned/left/pants/pants_08.png",
+          "sheet": "sheets/left/pants/pants_08.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_08.png",
+          "aligned": "aligned/right/pants/pants_08.png",
+          "sheet": "sheets/right/pants/pants_08.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_09",
+      "slot": "pants",
+      "label": "Jeans azul",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_09.png",
+          "aligned": "aligned/down/pants/pants_09.png",
+          "sheet": "sheets/down/pants/pants_09.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_09.png",
+          "aligned": "aligned/up/pants/pants_09.png",
+          "sheet": "sheets/up/pants/pants_09.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_09.png",
+          "aligned": "aligned/left/pants/pants_09.png",
+          "sheet": "sheets/left/pants/pants_09.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_09.png",
+          "aligned": "aligned/right/pants/pants_09.png",
+          "sheet": "sheets/right/pants/pants_09.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_10",
+      "slot": "pants",
+      "label": "Cargo técnica",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_10.png",
+          "aligned": "aligned/down/pants/pants_10.png",
+          "sheet": "sheets/down/pants/pants_10.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_10.png",
+          "aligned": "aligned/up/pants/pants_10.png",
+          "sheet": "sheets/up/pants/pants_10.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_10.png",
+          "aligned": "aligned/left/pants/pants_10.png",
+          "sheet": "sheets/left/pants/pants_10.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_10.png",
+          "aligned": "aligned/right/pants/pants_10.png",
+          "sheet": "sheets/right/pants/pants_10.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_11",
+      "slot": "pants",
+      "label": "Jeans cinza claro",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_11.png",
+          "aligned": "aligned/down/pants/pants_11.png",
+          "sheet": "sheets/down/pants/pants_11.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_11.png",
+          "aligned": "aligned/up/pants/pants_11.png",
+          "sheet": "sheets/up/pants/pants_11.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_11.png",
+          "aligned": "aligned/left/pants/pants_11.png",
+          "sheet": "sheets/left/pants/pants_11.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_11.png",
+          "aligned": "aligned/right/pants/pants_11.png",
+          "sheet": "sheets/right/pants/pants_11.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_12",
+      "slot": "pants",
+      "label": "Alfaiataria ameixa",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_12.png",
+          "aligned": "aligned/down/pants/pants_12.png",
+          "sheet": "sheets/down/pants/pants_12.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_12.png",
+          "aligned": "aligned/up/pants/pants_12.png",
+          "sheet": "sheets/up/pants/pants_12.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_12.png",
+          "aligned": "aligned/left/pants/pants_12.png",
+          "sheet": "sheets/left/pants/pants_12.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_12.png",
+          "aligned": "aligned/right/pants/pants_12.png",
+          "sheet": "sheets/right/pants/pants_12.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_13",
+      "slot": "pants",
+      "label": "Camuflada",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_13.png",
+          "aligned": "aligned/down/pants/pants_13.png",
+          "sheet": "sheets/down/pants/pants_13.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_13.png",
+          "aligned": "aligned/up/pants/pants_13.png",
+          "sheet": "sheets/up/pants/pants_13.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_13.png",
+          "aligned": "aligned/left/pants/pants_13.png",
+          "sheet": "sheets/left/pants/pants_13.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_13.png",
+          "aligned": "aligned/right/pants/pants_13.png",
+          "sheet": "sheets/right/pants/pants_13.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_14",
+      "slot": "pants",
+      "label": "Calça de chef",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_14.png",
+          "aligned": "aligned/down/pants/pants_14.png",
+          "sheet": "sheets/down/pants/pants_14.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_14.png",
+          "aligned": "aligned/up/pants/pants_14.png",
+          "sheet": "sheets/up/pants/pants_14.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_14.png",
+          "aligned": "aligned/left/pants/pants_14.png",
+          "sheet": "sheets/left/pants/pants_14.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_14.png",
+          "aligned": "aligned/right/pants/pants_14.png",
+          "sheet": "sheets/right/pants/pants_14.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_15",
+      "slot": "pants",
+      "label": "Calça impermeável",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_15.png",
+          "aligned": "aligned/down/pants/pants_15.png",
+          "sheet": "sheets/down/pants/pants_15.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_15.png",
+          "aligned": "aligned/up/pants/pants_15.png",
+          "sheet": "sheets/up/pants/pants_15.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_15.png",
+          "aligned": "aligned/left/pants/pants_15.png",
+          "sheet": "sheets/left/pants/pants_15.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_15.png",
+          "aligned": "aligned/right/pants/pants_15.png",
+          "sheet": "sheets/right/pants/pants_15.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "pants_16",
+      "slot": "pants",
+      "label": "Jogger preta",
+      "directions": {
+        "down": {
+          "item": "items/down/pants/pants_16.png",
+          "aligned": "aligned/down/pants/pants_16.png",
+          "sheet": "sheets/down/pants/pants_16.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "up": {
+          "item": "items/up/pants/pants_16.png",
+          "aligned": "aligned/up/pants/pants_16.png",
+          "sheet": "sheets/up/pants/pants_16.png",
+          "placement": {
+            "x": 80,
+            "y": 218,
+            "width": 96,
+            "height": 116
+          }
+        },
+        "left": {
+          "item": "items/left/pants/pants_16.png",
+          "aligned": "aligned/left/pants/pants_16.png",
+          "sheet": "sheets/left/pants/pants_16.png",
+          "placement": {
+            "x": 101,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        },
+        "right": {
+          "item": "items/right/pants/pants_16.png",
+          "aligned": "aligned/right/pants/pants_16.png",
+          "sheet": "sheets/right/pants/pants_16.png",
+          "placement": {
+            "x": 94,
+            "y": 218,
+            "width": 61,
+            "height": 116
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_01",
+      "slot": "shoes",
+      "label": "Bota preta",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_01.png",
+          "aligned": "aligned/down/shoes/shoes_01.png",
+          "sheet": "sheets/down/shoes/shoes_01.png",
+          "placement": {
+            "x": 75,
+            "y": 304,
+            "width": 106,
+            "height": 44
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_01.png",
+          "aligned": "aligned/up/shoes/shoes_01.png",
+          "sheet": "sheets/up/shoes/shoes_01.png",
+          "placement": {
+            "x": 75,
+            "y": 304,
+            "width": 106,
+            "height": 44
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_01.png",
+          "aligned": "aligned/left/shoes/shoes_01.png",
+          "sheet": "sheets/left/shoes/shoes_01.png",
+          "placement": {
+            "x": 82,
+            "y": 304,
+            "width": 88,
+            "height": 44
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_01.png",
+          "aligned": "aligned/right/shoes/shoes_01.png",
+          "sheet": "sheets/right/shoes/shoes_01.png",
+          "placement": {
+            "x": 86,
+            "y": 304,
+            "width": 88,
+            "height": 44
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_02",
+      "slot": "shoes",
+      "label": "Tênis branco",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_02.png",
+          "aligned": "aligned/down/shoes/shoes_02.png",
+          "sheet": "sheets/down/shoes/shoes_02.png",
+          "placement": {
+            "x": 75,
+            "y": 315,
+            "width": 106,
+            "height": 33
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_02.png",
+          "aligned": "aligned/up/shoes/shoes_02.png",
+          "sheet": "sheets/up/shoes/shoes_02.png",
+          "placement": {
+            "x": 75,
+            "y": 315,
+            "width": 106,
+            "height": 33
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_02.png",
+          "aligned": "aligned/left/shoes/shoes_02.png",
+          "sheet": "sheets/left/shoes/shoes_02.png",
+          "placement": {
+            "x": 82,
+            "y": 315,
+            "width": 88,
+            "height": 33
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_02.png",
+          "aligned": "aligned/right/shoes/shoes_02.png",
+          "sheet": "sheets/right/shoes/shoes_02.png",
+          "placement": {
+            "x": 86,
+            "y": 315,
+            "width": 88,
+            "height": 33
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_03",
+      "slot": "shoes",
+      "label": "Bota de trilha",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_03.png",
+          "aligned": "aligned/down/shoes/shoes_03.png",
+          "sheet": "sheets/down/shoes/shoes_03.png",
+          "placement": {
+            "x": 75,
+            "y": 305,
+            "width": 106,
+            "height": 43
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_03.png",
+          "aligned": "aligned/up/shoes/shoes_03.png",
+          "sheet": "sheets/up/shoes/shoes_03.png",
+          "placement": {
+            "x": 75,
+            "y": 305,
+            "width": 106,
+            "height": 43
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_03.png",
+          "aligned": "aligned/left/shoes/shoes_03.png",
+          "sheet": "sheets/left/shoes/shoes_03.png",
+          "placement": {
+            "x": 82,
+            "y": 305,
+            "width": 88,
+            "height": 43
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_03.png",
+          "aligned": "aligned/right/shoes/shoes_03.png",
+          "sheet": "sheets/right/shoes/shoes_03.png",
+          "placement": {
+            "x": 86,
+            "y": 305,
+            "width": 88,
+            "height": 43
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_04",
+      "slot": "shoes",
+      "label": "Oxford marrom",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_04.png",
+          "aligned": "aligned/down/shoes/shoes_04.png",
+          "sheet": "sheets/down/shoes/shoes_04.png",
+          "placement": {
+            "x": 75,
+            "y": 316,
+            "width": 106,
+            "height": 32
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_04.png",
+          "aligned": "aligned/up/shoes/shoes_04.png",
+          "sheet": "sheets/up/shoes/shoes_04.png",
+          "placement": {
+            "x": 75,
+            "y": 316,
+            "width": 106,
+            "height": 32
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_04.png",
+          "aligned": "aligned/left/shoes/shoes_04.png",
+          "sheet": "sheets/left/shoes/shoes_04.png",
+          "placement": {
+            "x": 82,
+            "y": 316,
+            "width": 88,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_04.png",
+          "aligned": "aligned/right/shoes/shoes_04.png",
+          "sheet": "sheets/right/shoes/shoes_04.png",
+          "placement": {
+            "x": 86,
+            "y": 316,
+            "width": 88,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_05",
+      "slot": "shoes",
+      "label": "Bota de camurça",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_05.png",
+          "aligned": "aligned/down/shoes/shoes_05.png",
+          "sheet": "sheets/down/shoes/shoes_05.png",
+          "placement": {
+            "x": 75,
+            "y": 305,
+            "width": 106,
+            "height": 43
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_05.png",
+          "aligned": "aligned/up/shoes/shoes_05.png",
+          "sheet": "sheets/up/shoes/shoes_05.png",
+          "placement": {
+            "x": 75,
+            "y": 305,
+            "width": 106,
+            "height": 43
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_05.png",
+          "aligned": "aligned/left/shoes/shoes_05.png",
+          "sheet": "sheets/left/shoes/shoes_05.png",
+          "placement": {
+            "x": 82,
+            "y": 305,
+            "width": 88,
+            "height": 43
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_05.png",
+          "aligned": "aligned/right/shoes/shoes_05.png",
+          "sheet": "sheets/right/shoes/shoes_05.png",
+          "placement": {
+            "x": 86,
+            "y": 305,
+            "width": 88,
+            "height": 43
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_06",
+      "slot": "shoes",
+      "label": "Chelsea preta",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_06.png",
+          "aligned": "aligned/down/shoes/shoes_06.png",
+          "sheet": "sheets/down/shoes/shoes_06.png",
+          "placement": {
+            "x": 75,
+            "y": 305,
+            "width": 106,
+            "height": 43
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_06.png",
+          "aligned": "aligned/up/shoes/shoes_06.png",
+          "sheet": "sheets/up/shoes/shoes_06.png",
+          "placement": {
+            "x": 75,
+            "y": 305,
+            "width": 106,
+            "height": 43
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_06.png",
+          "aligned": "aligned/left/shoes/shoes_06.png",
+          "sheet": "sheets/left/shoes/shoes_06.png",
+          "placement": {
+            "x": 82,
+            "y": 305,
+            "width": 88,
+            "height": 43
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_06.png",
+          "aligned": "aligned/right/shoes/shoes_06.png",
+          "sheet": "sheets/right/shoes/shoes_06.png",
+          "placement": {
+            "x": 86,
+            "y": 305,
+            "width": 88,
+            "height": 43
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_07",
+      "slot": "shoes",
+      "label": "Tênis hospitalar",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_07.png",
+          "aligned": "aligned/down/shoes/shoes_07.png",
+          "sheet": "sheets/down/shoes/shoes_07.png",
+          "placement": {
+            "x": 75,
+            "y": 315,
+            "width": 106,
+            "height": 33
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_07.png",
+          "aligned": "aligned/up/shoes/shoes_07.png",
+          "sheet": "sheets/up/shoes/shoes_07.png",
+          "placement": {
+            "x": 75,
+            "y": 315,
+            "width": 106,
+            "height": 33
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_07.png",
+          "aligned": "aligned/left/shoes/shoes_07.png",
+          "sheet": "sheets/left/shoes/shoes_07.png",
+          "placement": {
+            "x": 82,
+            "y": 315,
+            "width": 88,
+            "height": 33
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_07.png",
+          "aligned": "aligned/right/shoes/shoes_07.png",
+          "sheet": "sheets/right/shoes/shoes_07.png",
+          "placement": {
+            "x": 86,
+            "y": 315,
+            "width": 88,
+            "height": 33
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_08",
+      "slot": "shoes",
+      "label": "Bota de trabalho",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_08.png",
+          "aligned": "aligned/down/shoes/shoes_08.png",
+          "sheet": "sheets/down/shoes/shoes_08.png",
+          "placement": {
+            "x": 75,
+            "y": 304,
+            "width": 106,
+            "height": 44
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_08.png",
+          "aligned": "aligned/up/shoes/shoes_08.png",
+          "sheet": "sheets/up/shoes/shoes_08.png",
+          "placement": {
+            "x": 75,
+            "y": 304,
+            "width": 106,
+            "height": 44
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_08.png",
+          "aligned": "aligned/left/shoes/shoes_08.png",
+          "sheet": "sheets/left/shoes/shoes_08.png",
+          "placement": {
+            "x": 82,
+            "y": 304,
+            "width": 88,
+            "height": 44
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_08.png",
+          "aligned": "aligned/right/shoes/shoes_08.png",
+          "sheet": "sheets/right/shoes/shoes_08.png",
+          "placement": {
+            "x": 86,
+            "y": 304,
+            "width": 88,
+            "height": 44
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_09",
+      "slot": "shoes",
+      "label": "Bota marrom",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_09.png",
+          "aligned": "aligned/down/shoes/shoes_09.png",
+          "sheet": "sheets/down/shoes/shoes_09.png",
+          "placement": {
+            "x": 75,
+            "y": 305,
+            "width": 106,
+            "height": 43
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_09.png",
+          "aligned": "aligned/up/shoes/shoes_09.png",
+          "sheet": "sheets/up/shoes/shoes_09.png",
+          "placement": {
+            "x": 75,
+            "y": 305,
+            "width": 106,
+            "height": 43
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_09.png",
+          "aligned": "aligned/left/shoes/shoes_09.png",
+          "sheet": "sheets/left/shoes/shoes_09.png",
+          "placement": {
+            "x": 82,
+            "y": 305,
+            "width": 88,
+            "height": 43
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_09.png",
+          "aligned": "aligned/right/shoes/shoes_09.png",
+          "sheet": "sheets/right/shoes/shoes_09.png",
+          "placement": {
+            "x": 86,
+            "y": 305,
+            "width": 88,
+            "height": 43
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_10",
+      "slot": "shoes",
+      "label": "Tênis técnico",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_10.png",
+          "aligned": "aligned/down/shoes/shoes_10.png",
+          "sheet": "sheets/down/shoes/shoes_10.png",
+          "placement": {
+            "x": 75,
+            "y": 312,
+            "width": 106,
+            "height": 36
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_10.png",
+          "aligned": "aligned/up/shoes/shoes_10.png",
+          "sheet": "sheets/up/shoes/shoes_10.png",
+          "placement": {
+            "x": 75,
+            "y": 312,
+            "width": 106,
+            "height": 36
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_10.png",
+          "aligned": "aligned/left/shoes/shoes_10.png",
+          "sheet": "sheets/left/shoes/shoes_10.png",
+          "placement": {
+            "x": 82,
+            "y": 312,
+            "width": 88,
+            "height": 36
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_10.png",
+          "aligned": "aligned/right/shoes/shoes_10.png",
+          "sheet": "sheets/right/shoes/shoes_10.png",
+          "placement": {
+            "x": 86,
+            "y": 312,
+            "width": 88,
+            "height": 36
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_11",
+      "slot": "shoes",
+      "label": "Tênis cano alto vermelho",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_11.png",
+          "aligned": "aligned/down/shoes/shoes_11.png",
+          "sheet": "sheets/down/shoes/shoes_11.png",
+          "placement": {
+            "x": 75,
+            "y": 304,
+            "width": 106,
+            "height": 44
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_11.png",
+          "aligned": "aligned/up/shoes/shoes_11.png",
+          "sheet": "sheets/up/shoes/shoes_11.png",
+          "placement": {
+            "x": 75,
+            "y": 304,
+            "width": 106,
+            "height": 44
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_11.png",
+          "aligned": "aligned/left/shoes/shoes_11.png",
+          "sheet": "sheets/left/shoes/shoes_11.png",
+          "placement": {
+            "x": 82,
+            "y": 304,
+            "width": 88,
+            "height": 44
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_11.png",
+          "aligned": "aligned/right/shoes/shoes_11.png",
+          "sheet": "sheets/right/shoes/shoes_11.png",
+          "placement": {
+            "x": 86,
+            "y": 304,
+            "width": 88,
+            "height": 44
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_12",
+      "slot": "shoes",
+      "label": "Mocassim bege",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_12.png",
+          "aligned": "aligned/down/shoes/shoes_12.png",
+          "sheet": "sheets/down/shoes/shoes_12.png",
+          "placement": {
+            "x": 75,
+            "y": 319,
+            "width": 106,
+            "height": 29
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_12.png",
+          "aligned": "aligned/up/shoes/shoes_12.png",
+          "sheet": "sheets/up/shoes/shoes_12.png",
+          "placement": {
+            "x": 75,
+            "y": 319,
+            "width": 106,
+            "height": 29
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_12.png",
+          "aligned": "aligned/left/shoes/shoes_12.png",
+          "sheet": "sheets/left/shoes/shoes_12.png",
+          "placement": {
+            "x": 82,
+            "y": 319,
+            "width": 88,
+            "height": 29
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_12.png",
+          "aligned": "aligned/right/shoes/shoes_12.png",
+          "sheet": "sheets/right/shoes/shoes_12.png",
+          "placement": {
+            "x": 86,
+            "y": 319,
+            "width": 88,
+            "height": 29
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_13",
+      "slot": "shoes",
+      "label": "Coturno",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_13.png",
+          "aligned": "aligned/down/shoes/shoes_13.png",
+          "sheet": "sheets/down/shoes/shoes_13.png",
+          "placement": {
+            "x": 75,
+            "y": 300,
+            "width": 106,
+            "height": 48
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_13.png",
+          "aligned": "aligned/up/shoes/shoes_13.png",
+          "sheet": "sheets/up/shoes/shoes_13.png",
+          "placement": {
+            "x": 75,
+            "y": 300,
+            "width": 106,
+            "height": 48
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_13.png",
+          "aligned": "aligned/left/shoes/shoes_13.png",
+          "sheet": "sheets/left/shoes/shoes_13.png",
+          "placement": {
+            "x": 82,
+            "y": 300,
+            "width": 88,
+            "height": 48
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_13.png",
+          "aligned": "aligned/right/shoes/shoes_13.png",
+          "sheet": "sheets/right/shoes/shoes_13.png",
+          "placement": {
+            "x": 86,
+            "y": 300,
+            "width": 88,
+            "height": 48
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_14",
+      "slot": "shoes",
+      "label": "Calçado de cozinha",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_14.png",
+          "aligned": "aligned/down/shoes/shoes_14.png",
+          "sheet": "sheets/down/shoes/shoes_14.png",
+          "placement": {
+            "x": 75,
+            "y": 318,
+            "width": 106,
+            "height": 30
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_14.png",
+          "aligned": "aligned/up/shoes/shoes_14.png",
+          "sheet": "sheets/up/shoes/shoes_14.png",
+          "placement": {
+            "x": 75,
+            "y": 318,
+            "width": 106,
+            "height": 30
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_14.png",
+          "aligned": "aligned/left/shoes/shoes_14.png",
+          "sheet": "sheets/left/shoes/shoes_14.png",
+          "placement": {
+            "x": 82,
+            "y": 318,
+            "width": 88,
+            "height": 30
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_14.png",
+          "aligned": "aligned/right/shoes/shoes_14.png",
+          "sheet": "sheets/right/shoes/shoes_14.png",
+          "placement": {
+            "x": 86,
+            "y": 318,
+            "width": 88,
+            "height": 30
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_15",
+      "slot": "shoes",
+      "label": "Galocha amarela",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_15.png",
+          "aligned": "aligned/down/shoes/shoes_15.png",
+          "sheet": "sheets/down/shoes/shoes_15.png",
+          "placement": {
+            "x": 75,
+            "y": 296,
+            "width": 106,
+            "height": 52
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_15.png",
+          "aligned": "aligned/up/shoes/shoes_15.png",
+          "sheet": "sheets/up/shoes/shoes_15.png",
+          "placement": {
+            "x": 75,
+            "y": 296,
+            "width": 106,
+            "height": 52
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_15.png",
+          "aligned": "aligned/left/shoes/shoes_15.png",
+          "sheet": "sheets/left/shoes/shoes_15.png",
+          "placement": {
+            "x": 82,
+            "y": 296,
+            "width": 88,
+            "height": 52
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_15.png",
+          "aligned": "aligned/right/shoes/shoes_15.png",
+          "sheet": "sheets/right/shoes/shoes_15.png",
+          "placement": {
+            "x": 86,
+            "y": 296,
+            "width": 88,
+            "height": 52
+          }
+        }
+      }
+    },
+    {
+      "id": "shoes_16",
+      "slot": "shoes",
+      "label": "Tênis lilás",
+      "directions": {
+        "down": {
+          "item": "items/down/shoes/shoes_16.png",
+          "aligned": "aligned/down/shoes/shoes_16.png",
+          "sheet": "sheets/down/shoes/shoes_16.png",
+          "placement": {
+            "x": 75,
+            "y": 314,
+            "width": 106,
+            "height": 34
+          }
+        },
+        "up": {
+          "item": "items/up/shoes/shoes_16.png",
+          "aligned": "aligned/up/shoes/shoes_16.png",
+          "sheet": "sheets/up/shoes/shoes_16.png",
+          "placement": {
+            "x": 75,
+            "y": 314,
+            "width": 106,
+            "height": 34
+          }
+        },
+        "left": {
+          "item": "items/left/shoes/shoes_16.png",
+          "aligned": "aligned/left/shoes/shoes_16.png",
+          "sheet": "sheets/left/shoes/shoes_16.png",
+          "placement": {
+            "x": 82,
+            "y": 314,
+            "width": 88,
+            "height": 34
+          }
+        },
+        "right": {
+          "item": "items/right/shoes/shoes_16.png",
+          "aligned": "aligned/right/shoes/shoes_16.png",
+          "sheet": "sheets/right/shoes/shoes_16.png",
+          "placement": {
+            "x": 86,
+            "y": 314,
+            "width": 88,
+            "height": 34
+          }
+        }
+      }
+    },
+    {
+      "id": "hat_01",
+      "slot": "hat",
+      "label": "Boné vinho",
+      "directions": {
+        "down": {
+          "item": "items/down/hat/hat_01.png",
+          "aligned": "aligned/down/hat/hat_01.png",
+          "sheet": "sheets/down/hat/hat_01.png",
+          "placement": {
+            "x": 54,
+            "y": 15,
+            "width": 148,
+            "height": 94
+          }
+        },
+        "up": {
+          "item": "items/up/hat/hat_01.png",
+          "aligned": "aligned/up/hat/hat_01.png",
+          "sheet": "sheets/up/hat/hat_01.png",
+          "placement": {
+            "x": 54,
+            "y": 15,
+            "width": 148,
+            "height": 94
+          }
+        },
+        "left": {
+          "item": "items/left/hat/hat_01.png",
+          "aligned": "aligned/left/hat/hat_01.png",
+          "sheet": "sheets/left/hat/hat_01.png",
+          "placement": {
+            "x": 55,
+            "y": 15,
+            "width": 148,
+            "height": 94
+          }
+        },
+        "right": {
+          "item": "items/right/hat/hat_01.png",
+          "aligned": "aligned/right/hat/hat_01.png",
+          "sheet": "sheets/right/hat/hat_01.png",
+          "placement": {
+            "x": 53,
+            "y": 15,
+            "width": 148,
+            "height": 94
+          }
+        }
+      }
+    },
+    {
+      "id": "hat_02",
+      "slot": "hat",
+      "label": "Gorro carvão",
+      "directions": {
+        "down": {
+          "item": "items/down/hat/hat_02.png",
+          "aligned": "aligned/down/hat/hat_02.png",
+          "sheet": "sheets/down/hat/hat_02.png",
+          "placement": {
+            "x": 56,
+            "y": 13,
+            "width": 144,
+            "height": 94
+          }
+        },
+        "up": {
+          "item": "items/up/hat/hat_02.png",
+          "aligned": "aligned/up/hat/hat_02.png",
+          "sheet": "sheets/up/hat/hat_02.png",
+          "placement": {
+            "x": 56,
+            "y": 13,
+            "width": 144,
+            "height": 94
+          }
+        },
+        "left": {
+          "item": "items/left/hat/hat_02.png",
+          "aligned": "aligned/left/hat/hat_02.png",
+          "sheet": "sheets/left/hat/hat_02.png",
+          "placement": {
+            "x": 55,
+            "y": 13,
+            "width": 148,
+            "height": 94
+          }
+        },
+        "right": {
+          "item": "items/right/hat/hat_02.png",
+          "aligned": "aligned/right/hat/hat_02.png",
+          "sheet": "sheets/right/hat/hat_02.png",
+          "placement": {
+            "x": 53,
+            "y": 13,
+            "width": 148,
+            "height": 94
+          }
+        }
+      }
+    },
+    {
+      "id": "hat_03",
+      "slot": "hat",
+      "label": "Bucket bege",
+      "directions": {
+        "down": {
+          "item": "items/down/hat/hat_03.png",
+          "aligned": "aligned/down/hat/hat_03.png",
+          "sheet": "sheets/down/hat/hat_03.png",
+          "placement": {
+            "x": 44,
+            "y": 20,
+            "width": 168,
+            "height": 84
+          }
+        },
+        "up": {
+          "item": "items/up/hat/hat_03.png",
+          "aligned": "aligned/up/hat/hat_03.png",
+          "sheet": "sheets/up/hat/hat_03.png",
+          "placement": {
+            "x": 44,
+            "y": 20,
+            "width": 168,
+            "height": 84
+          }
+        },
+        "left": {
+          "item": "items/left/hat/hat_03.png",
+          "aligned": "aligned/left/hat/hat_03.png",
+          "sheet": "sheets/left/hat/hat_03.png",
+          "placement": {
+            "x": 55,
+            "y": 20,
+            "width": 148,
+            "height": 84
+          }
+        },
+        "right": {
+          "item": "items/right/hat/hat_03.png",
+          "aligned": "aligned/right/hat/hat_03.png",
+          "sheet": "sheets/right/hat/hat_03.png",
+          "placement": {
+            "x": 53,
+            "y": 20,
+            "width": 148,
+            "height": 84
+          }
+        }
+      }
+    },
+    {
+      "id": "hat_04",
+      "slot": "hat",
+      "label": "Fedora creme",
+      "directions": {
+        "down": {
+          "item": "items/down/hat/hat_04.png",
+          "aligned": "aligned/down/hat/hat_04.png",
+          "sheet": "sheets/down/hat/hat_04.png",
+          "placement": {
+            "x": 35,
+            "y": 10,
+            "width": 186,
+            "height": 98
+          }
+        },
+        "up": {
+          "item": "items/up/hat/hat_04.png",
+          "aligned": "aligned/up/hat/hat_04.png",
+          "sheet": "sheets/up/hat/hat_04.png",
+          "placement": {
+            "x": 35,
+            "y": 10,
+            "width": 186,
+            "height": 98
+          }
+        },
+        "left": {
+          "item": "items/left/hat/hat_04.png",
+          "aligned": "aligned/left/hat/hat_04.png",
+          "sheet": "sheets/left/hat/hat_04.png",
+          "placement": {
+            "x": 55,
+            "y": 10,
+            "width": 148,
+            "height": 98
+          }
+        },
+        "right": {
+          "item": "items/right/hat/hat_04.png",
+          "aligned": "aligned/right/hat/hat_04.png",
+          "sheet": "sheets/right/hat/hat_04.png",
+          "placement": {
+            "x": 53,
+            "y": 10,
+            "width": 148,
+            "height": 98
+          }
+        }
+      }
+    },
+    {
+      "id": "hat_05",
+      "slot": "hat",
+      "label": "Boné invertido",
+      "directions": {
+        "down": {
+          "item": "items/down/hat/hat_05.png",
+          "aligned": "aligned/down/hat/hat_05.png",
+          "sheet": "sheets/down/hat/hat_05.png",
+          "placement": {
+            "x": 56,
+            "y": 17,
+            "width": 144,
+            "height": 89
+          }
+        },
+        "up": {
+          "item": "items/up/hat/hat_05.png",
+          "aligned": "aligned/up/hat/hat_05.png",
+          "sheet": "sheets/up/hat/hat_05.png",
+          "placement": {
+            "x": 56,
+            "y": 17,
+            "width": 144,
+            "height": 89
+          }
+        },
+        "left": {
+          "item": "items/left/hat/hat_05.png",
+          "aligned": "aligned/left/hat/hat_05.png",
+          "sheet": "sheets/left/hat/hat_05.png",
+          "placement": {
+            "x": 55,
+            "y": 17,
+            "width": 148,
+            "height": 89
+          }
+        },
+        "right": {
+          "item": "items/right/hat/hat_05.png",
+          "aligned": "aligned/right/hat/hat_05.png",
+          "sheet": "sheets/right/hat/hat_05.png",
+          "placement": {
+            "x": 53,
+            "y": 17,
+            "width": 148,
+            "height": 89
+          }
+        }
+      }
+    },
+    {
+      "id": "hat_06",
+      "slot": "hat",
+      "label": "Gorro verde",
+      "directions": {
+        "down": {
+          "item": "items/down/hat/hat_06.png",
+          "aligned": "aligned/down/hat/hat_06.png",
+          "sheet": "sheets/down/hat/hat_06.png",
+          "placement": {
+            "x": 56,
+            "y": 13,
+            "width": 144,
+            "height": 94
+          }
+        },
+        "up": {
+          "item": "items/up/hat/hat_06.png",
+          "aligned": "aligned/up/hat/hat_06.png",
+          "sheet": "sheets/up/hat/hat_06.png",
+          "placement": {
+            "x": 56,
+            "y": 13,
+            "width": 144,
+            "height": 94
+          }
+        },
+        "left": {
+          "item": "items/left/hat/hat_06.png",
+          "aligned": "aligned/left/hat/hat_06.png",
+          "sheet": "sheets/left/hat/hat_06.png",
+          "placement": {
+            "x": 55,
+            "y": 13,
+            "width": 148,
+            "height": 94
+          }
+        },
+        "right": {
+          "item": "items/right/hat/hat_06.png",
+          "aligned": "aligned/right/hat/hat_06.png",
+          "sheet": "sheets/right/hat/hat_06.png",
+          "placement": {
+            "x": 53,
+            "y": 13,
+            "width": 148,
+            "height": 94
+          }
+        }
+      }
+    },
+    {
+      "id": "hat_07",
+      "slot": "hat",
+      "label": "Capacete de obra",
+      "directions": {
+        "down": {
+          "item": "items/down/hat/hat_07.png",
+          "aligned": "aligned/down/hat/hat_07.png",
+          "sheet": "sheets/down/hat/hat_07.png",
+          "placement": {
+            "x": 46,
+            "y": 13,
+            "width": 164,
+            "height": 96
+          }
+        },
+        "up": {
+          "item": "items/up/hat/hat_07.png",
+          "aligned": "aligned/up/hat/hat_07.png",
+          "sheet": "sheets/up/hat/hat_07.png",
+          "placement": {
+            "x": 46,
+            "y": 13,
+            "width": 164,
+            "height": 96
+          }
+        },
+        "left": {
+          "item": "items/left/hat/hat_07.png",
+          "aligned": "aligned/left/hat/hat_07.png",
+          "sheet": "sheets/left/hat/hat_07.png",
+          "placement": {
+            "x": 55,
+            "y": 13,
+            "width": 148,
+            "height": 96
+          }
+        },
+        "right": {
+          "item": "items/right/hat/hat_07.png",
+          "aligned": "aligned/right/hat/hat_07.png",
+          "sheet": "sheets/right/hat/hat_07.png",
+          "placement": {
+            "x": 53,
+            "y": 13,
+            "width": 148,
+            "height": 96
+          }
+        }
+      }
+    },
+    {
+      "id": "hat_08",
+      "slot": "hat",
+      "label": "Chapéu de chef",
+      "directions": {
+        "down": {
+          "item": "items/down/hat/hat_08.png",
+          "aligned": "aligned/down/hat/hat_08.png",
+          "sheet": "sheets/down/hat/hat_08.png",
+          "placement": {
+            "x": 53,
+            "y": 1,
+            "width": 150,
+            "height": 109
+          }
+        },
+        "up": {
+          "item": "items/up/hat/hat_08.png",
+          "aligned": "aligned/up/hat/hat_08.png",
+          "sheet": "sheets/up/hat/hat_08.png",
+          "placement": {
+            "x": 53,
+            "y": 1,
+            "width": 150,
+            "height": 109
+          }
+        },
+        "left": {
+          "item": "items/left/hat/hat_08.png",
+          "aligned": "aligned/left/hat/hat_08.png",
+          "sheet": "sheets/left/hat/hat_08.png",
+          "placement": {
+            "x": 55,
+            "y": 1,
+            "width": 148,
+            "height": 109
+          }
+        },
+        "right": {
+          "item": "items/right/hat/hat_08.png",
+          "aligned": "aligned/right/hat/hat_08.png",
+          "sheet": "sheets/right/hat/hat_08.png",
+          "placement": {
+            "x": 53,
+            "y": 1,
+            "width": 148,
+            "height": 109
+          }
+        }
+      }
+    },
+    {
+      "id": "glasses_01",
+      "slot": "glasses",
+      "label": "Redondo dourado",
+      "directions": {
+        "down": {
+          "item": "items/down/glasses/glasses_01.png",
+          "aligned": "aligned/down/glasses/glasses_01.png",
+          "sheet": "sheets/down/glasses/glasses_01.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "up": {
+          "item": "items/up/glasses/glasses_01.png",
+          "aligned": "aligned/up/glasses/glasses_01.png",
+          "sheet": "sheets/up/glasses/glasses_01.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "left": {
+          "item": "items/left/glasses/glasses_01.png",
+          "aligned": "aligned/left/glasses/glasses_01.png",
+          "sheet": "sheets/left/glasses/glasses_01.png",
+          "placement": {
+            "x": 77,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/glasses/glasses_01.png",
+          "aligned": "aligned/right/glasses/glasses_01.png",
+          "sheet": "sheets/right/glasses/glasses_01.png",
+          "placement": {
+            "x": 102,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "glasses_02",
+      "slot": "glasses",
+      "label": "Retangular preto",
+      "directions": {
+        "down": {
+          "item": "items/down/glasses/glasses_02.png",
+          "aligned": "aligned/down/glasses/glasses_02.png",
+          "sheet": "sheets/down/glasses/glasses_02.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "up": {
+          "item": "items/up/glasses/glasses_02.png",
+          "aligned": "aligned/up/glasses/glasses_02.png",
+          "sheet": "sheets/up/glasses/glasses_02.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "left": {
+          "item": "items/left/glasses/glasses_02.png",
+          "aligned": "aligned/left/glasses/glasses_02.png",
+          "sheet": "sheets/left/glasses/glasses_02.png",
+          "placement": {
+            "x": 77,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/glasses/glasses_02.png",
+          "aligned": "aligned/right/glasses/glasses_02.png",
+          "sheet": "sheets/right/glasses/glasses_02.png",
+          "placement": {
+            "x": 102,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "glasses_03",
+      "slot": "glasses",
+      "label": "Aviador",
+      "directions": {
+        "down": {
+          "item": "items/down/glasses/glasses_03.png",
+          "aligned": "aligned/down/glasses/glasses_03.png",
+          "sheet": "sheets/down/glasses/glasses_03.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "up": {
+          "item": "items/up/glasses/glasses_03.png",
+          "aligned": "aligned/up/glasses/glasses_03.png",
+          "sheet": "sheets/up/glasses/glasses_03.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "left": {
+          "item": "items/left/glasses/glasses_03.png",
+          "aligned": "aligned/left/glasses/glasses_03.png",
+          "sheet": "sheets/left/glasses/glasses_03.png",
+          "placement": {
+            "x": 77,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/glasses/glasses_03.png",
+          "aligned": "aligned/right/glasses/glasses_03.png",
+          "sheet": "sheets/right/glasses/glasses_03.png",
+          "placement": {
+            "x": 102,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "glasses_04",
+      "slot": "glasses",
+      "label": "Gatinho tartaruga",
+      "directions": {
+        "down": {
+          "item": "items/down/glasses/glasses_04.png",
+          "aligned": "aligned/down/glasses/glasses_04.png",
+          "sheet": "sheets/down/glasses/glasses_04.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "up": {
+          "item": "items/up/glasses/glasses_04.png",
+          "aligned": "aligned/up/glasses/glasses_04.png",
+          "sheet": "sheets/up/glasses/glasses_04.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "left": {
+          "item": "items/left/glasses/glasses_04.png",
+          "aligned": "aligned/left/glasses/glasses_04.png",
+          "sheet": "sheets/left/glasses/glasses_04.png",
+          "placement": {
+            "x": 77,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/glasses/glasses_04.png",
+          "aligned": "aligned/right/glasses/glasses_04.png",
+          "sheet": "sheets/right/glasses/glasses_04.png",
+          "placement": {
+            "x": 102,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "glasses_05",
+      "slot": "glasses",
+      "label": "Solar prateado",
+      "directions": {
+        "down": {
+          "item": "items/down/glasses/glasses_05.png",
+          "aligned": "aligned/down/glasses/glasses_05.png",
+          "sheet": "sheets/down/glasses/glasses_05.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "up": {
+          "item": "items/up/glasses/glasses_05.png",
+          "aligned": "aligned/up/glasses/glasses_05.png",
+          "sheet": "sheets/up/glasses/glasses_05.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "left": {
+          "item": "items/left/glasses/glasses_05.png",
+          "aligned": "aligned/left/glasses/glasses_05.png",
+          "sheet": "sheets/left/glasses/glasses_05.png",
+          "placement": {
+            "x": 77,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/glasses/glasses_05.png",
+          "aligned": "aligned/right/glasses/glasses_05.png",
+          "sheet": "sheets/right/glasses/glasses_05.png",
+          "placement": {
+            "x": 102,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "glasses_06",
+      "slot": "glasses",
+      "label": "Browline",
+      "directions": {
+        "down": {
+          "item": "items/down/glasses/glasses_06.png",
+          "aligned": "aligned/down/glasses/glasses_06.png",
+          "sheet": "sheets/down/glasses/glasses_06.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "up": {
+          "item": "items/up/glasses/glasses_06.png",
+          "aligned": "aligned/up/glasses/glasses_06.png",
+          "sheet": "sheets/up/glasses/glasses_06.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "left": {
+          "item": "items/left/glasses/glasses_06.png",
+          "aligned": "aligned/left/glasses/glasses_06.png",
+          "sheet": "sheets/left/glasses/glasses_06.png",
+          "placement": {
+            "x": 77,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/glasses/glasses_06.png",
+          "aligned": "aligned/right/glasses/glasses_06.png",
+          "sheet": "sheets/right/glasses/glasses_06.png",
+          "placement": {
+            "x": 102,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "glasses_07",
+      "slot": "glasses",
+      "label": "Visor ciano",
+      "directions": {
+        "down": {
+          "item": "items/down/glasses/glasses_07.png",
+          "aligned": "aligned/down/glasses/glasses_07.png",
+          "sheet": "sheets/down/glasses/glasses_07.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "up": {
+          "item": "items/up/glasses/glasses_07.png",
+          "aligned": "aligned/up/glasses/glasses_07.png",
+          "sheet": "sheets/up/glasses/glasses_07.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "left": {
+          "item": "items/left/glasses/glasses_07.png",
+          "aligned": "aligned/left/glasses/glasses_07.png",
+          "sheet": "sheets/left/glasses/glasses_07.png",
+          "placement": {
+            "x": 77,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/glasses/glasses_07.png",
+          "aligned": "aligned/right/glasses/glasses_07.png",
+          "sheet": "sheets/right/glasses/glasses_07.png",
+          "placement": {
+            "x": 102,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "glasses_08",
+      "slot": "glasses",
+      "label": "Redondo violeta",
+      "directions": {
+        "down": {
+          "item": "items/down/glasses/glasses_08.png",
+          "aligned": "aligned/down/glasses/glasses_08.png",
+          "sheet": "sheets/down/glasses/glasses_08.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "up": {
+          "item": "items/up/glasses/glasses_08.png",
+          "aligned": "aligned/up/glasses/glasses_08.png",
+          "sheet": "sheets/up/glasses/glasses_08.png",
+          "placement": {
+            "x": 76,
+            "y": 94,
+            "width": 104,
+            "height": 39
+          }
+        },
+        "left": {
+          "item": "items/left/glasses/glasses_08.png",
+          "aligned": "aligned/left/glasses/glasses_08.png",
+          "sheet": "sheets/left/glasses/glasses_08.png",
+          "placement": {
+            "x": 77,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        },
+        "right": {
+          "item": "items/right/glasses/glasses_08.png",
+          "aligned": "aligned/right/glasses/glasses_08.png",
+          "sheet": "sheets/right/glasses/glasses_08.png",
+          "placement": {
+            "x": 102,
+            "y": 94,
+            "width": 77,
+            "height": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "skin_01",
+      "slot": "skin",
+      "label": "Marfim",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_01.png",
+          "aligned": "aligned/down/skin/skin_01.png",
+          "sheet": "sheets/down/skin/skin_01.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_01.png",
+          "aligned": "aligned/up/skin/skin_01.png",
+          "sheet": "sheets/up/skin/skin_01.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_01.png",
+          "aligned": "aligned/left/skin/skin_01.png",
+          "sheet": "sheets/left/skin/skin_01.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_01.png",
+          "aligned": "aligned/right/skin/skin_01.png",
+          "sheet": "sheets/right/skin/skin_01.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      }
+    },
+    {
+      "id": "skin_02",
+      "slot": "skin",
+      "label": "Pêssego",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_02.png",
+          "aligned": "aligned/down/skin/skin_02.png",
+          "sheet": "sheets/down/skin/skin_02.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_02.png",
+          "aligned": "aligned/up/skin/skin_02.png",
+          "sheet": "sheets/up/skin/skin_02.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_02.png",
+          "aligned": "aligned/left/skin/skin_02.png",
+          "sheet": "sheets/left/skin/skin_02.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_02.png",
+          "aligned": "aligned/right/skin/skin_02.png",
+          "sheet": "sheets/right/skin/skin_02.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      }
+    },
+    {
+      "id": "skin_03",
+      "slot": "skin",
+      "label": "Dourado",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_03.png",
+          "aligned": "aligned/down/skin/skin_03.png",
+          "sheet": "sheets/down/skin/skin_03.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_03.png",
+          "aligned": "aligned/up/skin/skin_03.png",
+          "sheet": "sheets/up/skin/skin_03.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_03.png",
+          "aligned": "aligned/left/skin/skin_03.png",
+          "sheet": "sheets/left/skin/skin_03.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_03.png",
+          "aligned": "aligned/right/skin/skin_03.png",
+          "sheet": "sheets/right/skin/skin_03.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      }
+    },
+    {
+      "id": "skin_04",
+      "slot": "skin",
+      "label": "Oliva",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_04.png",
+          "aligned": "aligned/down/skin/skin_04.png",
+          "sheet": "sheets/down/skin/skin_04.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_04.png",
+          "aligned": "aligned/up/skin/skin_04.png",
+          "sheet": "sheets/up/skin/skin_04.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_04.png",
+          "aligned": "aligned/left/skin/skin_04.png",
+          "sheet": "sheets/left/skin/skin_04.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_04.png",
+          "aligned": "aligned/right/skin/skin_04.png",
+          "sheet": "sheets/right/skin/skin_04.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      }
+    },
+    {
+      "id": "skin_05",
+      "slot": "skin",
+      "label": "Castanho",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_05.png",
+          "aligned": "aligned/down/skin/skin_05.png",
+          "sheet": "sheets/down/skin/skin_05.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_05.png",
+          "aligned": "aligned/up/skin/skin_05.png",
+          "sheet": "sheets/up/skin/skin_05.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_05.png",
+          "aligned": "aligned/left/skin/skin_05.png",
+          "sheet": "sheets/left/skin/skin_05.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_05.png",
+          "aligned": "aligned/right/skin/skin_05.png",
+          "sheet": "sheets/right/skin/skin_05.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      }
+    },
+    {
+      "id": "skin_06",
+      "slot": "skin",
+      "label": "Castanho escuro",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_06.png",
+          "aligned": "aligned/down/skin/skin_06.png",
+          "sheet": "sheets/down/skin/skin_06.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_06.png",
+          "aligned": "aligned/up/skin/skin_06.png",
+          "sheet": "sheets/up/skin/skin_06.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_06.png",
+          "aligned": "aligned/left/skin/skin_06.png",
+          "sheet": "sheets/left/skin/skin_06.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_06.png",
+          "aligned": "aligned/right/skin/skin_06.png",
+          "sheet": "sheets/right/skin/skin_06.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      }
+    },
+    {
+      "id": "skin_female_01",
+      "slot": "skin",
+      "label": "Marfim",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_female_01.png",
+          "aligned": "items/down/skin/skin_female_01.png",
+          "sheet": "sheets/down/skin/skin_female_01.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_female_01.png",
+          "aligned": "items/up/skin/skin_female_01.png",
+          "sheet": "sheets/up/skin/skin_female_01.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_female_01.png",
+          "aligned": "items/left/skin/skin_female_01.png",
+          "sheet": "sheets/left/skin/skin_female_01.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_female_01.png",
+          "aligned": "items/right/skin/skin_female_01.png",
+          "sheet": "sheets/right/skin/skin_female_01.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      },
+      "body": "female"
+    },
+    {
+      "id": "skin_female_02",
+      "slot": "skin",
+      "label": "Pêssego",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_female_02.png",
+          "aligned": "items/down/skin/skin_female_02.png",
+          "sheet": "sheets/down/skin/skin_female_02.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_female_02.png",
+          "aligned": "items/up/skin/skin_female_02.png",
+          "sheet": "sheets/up/skin/skin_female_02.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_female_02.png",
+          "aligned": "items/left/skin/skin_female_02.png",
+          "sheet": "sheets/left/skin/skin_female_02.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_female_02.png",
+          "aligned": "items/right/skin/skin_female_02.png",
+          "sheet": "sheets/right/skin/skin_female_02.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      },
+      "body": "female"
+    },
+    {
+      "id": "skin_female_03",
+      "slot": "skin",
+      "label": "Dourado",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_female_03.png",
+          "aligned": "items/down/skin/skin_female_03.png",
+          "sheet": "sheets/down/skin/skin_female_03.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_female_03.png",
+          "aligned": "items/up/skin/skin_female_03.png",
+          "sheet": "sheets/up/skin/skin_female_03.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_female_03.png",
+          "aligned": "items/left/skin/skin_female_03.png",
+          "sheet": "sheets/left/skin/skin_female_03.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_female_03.png",
+          "aligned": "items/right/skin/skin_female_03.png",
+          "sheet": "sheets/right/skin/skin_female_03.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      },
+      "body": "female"
+    },
+    {
+      "id": "skin_female_04",
+      "slot": "skin",
+      "label": "Oliva",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_female_04.png",
+          "aligned": "items/down/skin/skin_female_04.png",
+          "sheet": "sheets/down/skin/skin_female_04.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_female_04.png",
+          "aligned": "items/up/skin/skin_female_04.png",
+          "sheet": "sheets/up/skin/skin_female_04.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_female_04.png",
+          "aligned": "items/left/skin/skin_female_04.png",
+          "sheet": "sheets/left/skin/skin_female_04.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_female_04.png",
+          "aligned": "items/right/skin/skin_female_04.png",
+          "sheet": "sheets/right/skin/skin_female_04.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      },
+      "body": "female"
+    },
+    {
+      "id": "skin_female_05",
+      "slot": "skin",
+      "label": "Castanho",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_female_05.png",
+          "aligned": "items/down/skin/skin_female_05.png",
+          "sheet": "sheets/down/skin/skin_female_05.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_female_05.png",
+          "aligned": "items/up/skin/skin_female_05.png",
+          "sheet": "sheets/up/skin/skin_female_05.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_female_05.png",
+          "aligned": "items/left/skin/skin_female_05.png",
+          "sheet": "sheets/left/skin/skin_female_05.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_female_05.png",
+          "aligned": "items/right/skin/skin_female_05.png",
+          "sheet": "sheets/right/skin/skin_female_05.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      },
+      "body": "female"
+    },
+    {
+      "id": "skin_female_06",
+      "slot": "skin",
+      "label": "Castanho escuro",
+      "directions": {
+        "down": {
+          "item": "items/down/skin/skin_female_06.png",
+          "aligned": "items/down/skin/skin_female_06.png",
+          "sheet": "sheets/down/skin/skin_female_06.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "up": {
+          "item": "items/up/skin/skin_female_06.png",
+          "aligned": "items/up/skin/skin_female_06.png",
+          "sheet": "sheets/up/skin/skin_female_06.png",
+          "placement": {
+            "x": 58,
+            "y": 32,
+            "width": 140,
+            "height": 312
+          }
+        },
+        "left": {
+          "item": "items/left/skin/skin_female_06.png",
+          "aligned": "items/left/skin/skin_female_06.png",
+          "sheet": "sheets/left/skin/skin_female_06.png",
+          "placement": {
+            "x": 76,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        },
+        "right": {
+          "item": "items/right/skin/skin_female_06.png",
+          "aligned": "items/right/skin/skin_female_06.png",
+          "sheet": "sheets/right/skin/skin_female_06.png",
+          "placement": {
+            "x": 74,
+            "y": 32,
+            "width": 106,
+            "height": 312
+          }
+        }
+      },
+      "body": "female"
+    }
+  ],
+  "defaults": {
+    "skin": "skin_02",
+    "hair": "hair_01",
+    "top": "top_01",
+    "jacket": "jacket_01",
+    "pants": "pants_01",
+    "shoes": "shoes_01",
+    "hat": null,
+    "glasses": null
+  },
+  "notes": [
+    "Right view is mirrored from left.",
+    "Animations are synchronized 2D cutout rigs; not hand-drawn frame-by-frame perspective animation.",
+    "Skin rig is intended to be worn with trousers and shoes. Full body source art is included.",
+    "Apply documented top-under-jacket and hair-under-hat clipping for a clean fit."
+  ]
+}

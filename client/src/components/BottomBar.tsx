@@ -36,9 +36,13 @@ import { phaserEvents, Event } from '../events/EventCenter'
 import { markConversationRead, setShowChat, setFocused, setSelectedConversation } from '../stores/ChatStore'
 import GroupFocusPanel from './GroupFocusPanel'
 import IndividualFocusPanel from './IndividualFocusPanel'
+import ActivityStatus from './ActivityStatus'
 import RankEstudosDialog from './RankEstudosDialog'
 import StudyTogetherPanel from './StudyTogetherPanel'
 import EditAvatarDialog from './EditAvatarDialog'
+import { AvatarThumbnail } from './AvatarPicker'
+import { saveAvatarByName } from '../services/AvatarPersistence'
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import TeamLabelDialog from './TeamLabelDialog'
 import PreferencesDialog from './PreferencesDialog'
 import {
@@ -210,6 +214,8 @@ const StatusMenu = styled.div`
   color: #eee;
   padding: 14px;
   width: 220px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
   border-radius: 10px;
 
   .name {
@@ -224,13 +230,36 @@ const StatusMenu = styled.div`
   }
 `
 
+const AvatarProfileOption = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  margin: 2px 0 12px;
+  border: 1px solid #3c4160;
+  border-radius: 10px;
+  background: #202335;
+  color: #eee;
+  text-align: left;
+  cursor: pointer;
+  &:hover { background: #2e3349; }
+  canvas { width: 32px; height: 48px; flex: 0 0 32px; image-rendering: pixelated; background: #35394d; border-radius: 8px; }
+  .avatar-copy { flex: 1; min-width: 0; }
+  .avatar-title { font-weight: 700; font-size: 13px; }
+  .avatar-action { color: #aeb4c9; font-size: 11px; margin-top: 3px; }
+  svg { font-size: 17px; color: #aeb4c9; }
+`
+
 const StatusOptions = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 `
 
 const StatusOption = styled.button<{ selected: boolean; color: string }>`
-  flex: 1;
+  flex: 1 0 88px;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -387,9 +416,9 @@ const DecorationCursorGhost = styled.div`
 `
 
 const statusMeta = {
-  active: { label: 'Active', color: '#22c55e', icon: <CircleIcon /> },
-  busy: { label: 'Busy', color: '#ef4444', icon: <HeadsetIcon /> },
-  away: { label: 'Away', color: '#f59e0b', icon: <RadioButtonUncheckedIcon /> },
+  active: { label: 'Disponível', color: '#22c55e', icon: <CircleIcon /> },
+  busy: { label: 'Ocupado', color: '#ef4444', icon: <HeadsetIcon /> },
+  away: { label: 'Ausente', color: '#f59e0b', icon: <RadioButtonUncheckedIcon /> },
 }
 
 export default function BottomBar() {
@@ -691,7 +720,7 @@ export default function BottomBar() {
       <Alert severity="error" variant="filled" onClose={() => setMediaError('')}>{mediaError}</Alert>
     </Snackbar>
     <Bar className="skyoffice-bottom-bar">
-      <Tooltip title="Your profile">
+      <Tooltip title="Seu perfil">
         <ProfileButton
           ringColor={statusMeta[status].color}
           onClick={(e) => setProfileAnchor(e.currentTarget)}
@@ -726,35 +755,40 @@ export default function BottomBar() {
               </StatusOption>
             ))}
           </StatusOptions>
-          <button
+          <ActivityStatus />
+          <AvatarProfileOption
             type="button"
-            style={{ marginTop: 12, width: '100%' }}
+            aria-label="Editar avatar"
             onClick={() => {
-              setAvatarChoice(loadSavedAvatar(myPlayerName) || DEFAULT_AVATAR_CHOICE)
+              const saved = loadSavedAvatar(myPlayerName) || DEFAULT_AVATAR_CHOICE
+              setAvatarChoice(saved)
               setAvatarEditorOpen(true)
               setProfileAnchor(null)
             }}
           >
-            Edit avatar
-          </button>
+            <AvatarThumbnail parts={avatarChoice.parts} />
+            <span className="avatar-copy"><span className="avatar-title">Avatar</span><br /><span className="avatar-action">Editar aparência</span></span>
+            <EditOutlinedIcon />
+          </AvatarProfileOption>
         </StatusMenu>
       </Popover>
 
       <EditAvatarDialog
         open={avatarEditorOpen}
         initialValue={avatarChoice}
+        playerName={myPlayerName}
         onClose={() => setAvatarEditorOpen(false)}
         onPreview={(choice) => {
           const game = phaserGame.scene.keys.game as Game | undefined
-          game?.myPlayer?.setPlayerTexture(choice.avatar)
-          game?.myPlayer?.setPlayerTint(choice.tint)
+          game?.myPlayer?.setAvatarAppearance(JSON.stringify(choice.parts || {}))
         }}
         onSave={(choice) => {
           saveAvatar(myPlayerName, choice)
+          void saveAvatarByName(myPlayerName, choice).catch((error) => console.warn('Falha ao sincronizar avatar pelo nome', error))
           setAvatarChoice(choice)
           const game = phaserGame.scene.keys.game as Game | undefined
-          game?.myPlayer?.setPlayerTexture(choice.avatar)
-          game?.myPlayer?.setPlayerTint(choice.tint)
+          game?.myPlayer?.setAvatarAppearance(JSON.stringify(choice.parts || {}))
+          game?.network?.updatePlayerAppearance(JSON.stringify(choice.parts || {}))
         }}
       />
 
@@ -930,10 +964,10 @@ export default function BottomBar() {
         document.body
       )}
 
-      <Tooltip title="Lançar horas no RankEstudos">
+      <Tooltip title="Abrir RankEstudos">
         <span>
           <RoundIconButton
-            aria-label="Lançar horas no RankEstudos"
+            aria-label="Abrir RankEstudos"
             disabled={!loggedIn || !myPlayerName}
             onClick={() => setRankEstudosOpen(true)}
           >
@@ -1055,3 +1089,6 @@ export default function BottomBar() {
     </>
   )
 }
+
+
+

@@ -768,13 +768,14 @@ export default class WebRTC {
   }
 
   setPlayerProximity(playerId: string, distance: number, roomAudioAllowed = true) {
-    const normalizedDistance = Math.max(0, Math.min(1, distance / 300))
+    const normalizedDistance = Math.max(0, Math.min(1, distance / 340))
     const attenuation = roomAudioAllowed ? (1 - normalizedDistance) ** 1.5 : 0
     this.playerProximity.set(playerId, attenuation)
     const volume = this.nearbyVolume * attenuation * (this.participantVolumes.get(playerId) ?? 1)
     this.getRemoteMediaElements(playerId).forEach((media) => {
-      media.volume = volume
-      media.muted = media instanceof HTMLVideoElement ? true : this.locallyMutedPlayers.has(playerId)
+        if (media.volume !== volume) media.volume = volume
+        const muted = media instanceof HTMLVideoElement ? true : this.locallyMutedPlayers.has(playerId)
+        if (media.muted !== muted) media.muted = muted
     })
   }
 
@@ -809,8 +810,11 @@ export default class WebRTC {
     // A peer can briefly have both an outgoing and an incoming PeerJS call.
     // Update every matching element so an old call cannot leave a frozen frame
     // visible after the participant turns their camera off.
-    this.getRemoteVideoElements(playerId).forEach((video) => {
-      video.style.setProperty('display', enabled ? 'block' : 'none', 'important')
+      this.getRemoteVideoElements(playerId).forEach((video) => {
+        const display = enabled ? 'block' : 'none'
+        if (video.style.display !== display || video.style.getPropertyPriority('display') !== 'important') {
+          video.style.setProperty('display', display, 'important')
+        }
     })
   }
 
@@ -1069,9 +1073,11 @@ export default class WebRTC {
   // called every frame from Game.ts to keep the video bubble glued above the player's sprite
   setVideoPosition(playerId: string, screenX: number, screenY: number) {
     const video = this.getVideoElement(playerId)
-    if (video) {
-      video.style.left = `${screenX}px`
-      video.style.top = `${screenY}px`
+      if (video) {
+        const left = `${screenX}px`
+        const top = `${screenY}px`
+        if (video.style.left !== left) video.style.left = left
+        if (video.style.top !== top) video.style.top = top
     }
   }
 

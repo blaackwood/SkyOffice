@@ -15,7 +15,7 @@ import { ItemType } from '../../../types/Items'
 import WebRTC from '../web/WebRTC'
 import { phaserEvents, Event } from '../events/EventCenter'
 import store from '../stores'
-import { setSessionId, setPlayerNameMap, removePlayerNameMap } from '../stores/UserStore'
+import { setSessionId, setPlayerNameMap, removePlayerNameMap, setMyActivity } from '../stores/UserStore'
 import {
   setLobbyJoined,
   setJoinedRoomData,
@@ -45,6 +45,7 @@ export default class Network {
   private lastPlayerUpdate?: { x: number; y: number; anim: string }
   private lastPositionSavedAt = 0
   private lastPlayerTint?: number
+  private lastPlayerAppearance?: string
   private lastPlayerStatus?: 'active' | 'busy' | 'away'
   private lastMicrophoneEnabled?: boolean
   private lastCameraEnabled?: boolean
@@ -54,6 +55,10 @@ export default class Network {
 
   get roomState(): IOfficeState | undefined {
     return this.room?.state
+  }
+
+  updatePlayerActivity(action: 'start' | 'pause' | 'resume' | 'stop' | 'subject', label?: string) {
+    this.room?.send(Message.UPDATE_PLAYER_ACTIVITY, { action, label })
   }
 
   constructor() {
@@ -249,7 +254,13 @@ export default class Network {
         const syncMyDesk = () => phaserEvents.emit(Event.MY_DESK_UPDATED, player.deskIndex)
         player.onChange = (changes) => {
           if (changes.some(({ field }) => field === 'deskIndex')) syncMyDesk()
+          if (changes.some(({ field }) => field === 'activity')) {
+            store.dispatch(setMyActivity(player.activity))
+            phaserEvents.emit(Event.PLAYER_UPDATED, 'activity', player.activity, key)
+          }
         }
+        store.dispatch(setMyActivity(player.activity))
+        phaserEvents.emit(Event.PLAYER_UPDATED, 'activity', player.activity, key)
         syncMyDesk()
         return
       }
@@ -264,6 +275,7 @@ export default class Network {
       phaserEvents.emit(Event.PLAYER_UPDATED, 'videoConnected', player.videoConnected, key)
       phaserEvents.emit(Event.PLAYER_UPDATED, 'cameraEnabled', player.cameraEnabled, key)
       phaserEvents.emit(Event.PLAYER_UPDATED, 'microphoneEnabled', player.microphoneEnabled, key)
+      if (player.avatarAppearance) phaserEvents.emit(Event.PLAYER_UPDATED, 'avatarAppearance', player.avatarAppearance, key)
       let playerReportedJoined = false
       const reportPlayerJoined = () => {
         if (playerReportedJoined || player.name === '') return
@@ -596,6 +608,7 @@ export default class Network {
       this.updatePlayer(x, y, anim)
     }
     if (this.lastPlayerTint !== undefined) this.updatePlayerTint(this.lastPlayerTint)
+    if (this.lastPlayerAppearance !== undefined) this.updatePlayerAppearance(this.lastPlayerAppearance)
     if (this.lastPlayerStatus) this.updatePlayerStatus(this.lastPlayerStatus)
     if (this.lastMicrophoneEnabled !== undefined) this.updateMicrophoneState(this.lastMicrophoneEnabled)
     if (this.lastCameraEnabled !== undefined) this.updateCameraState(this.lastCameraEnabled)
@@ -630,6 +643,8 @@ export default class Network {
     context?: any
   ) {
     phaserEvents.on(Event.PLAYER_UPDATED, callback, context)
+    const player = this.room?.state.players.get(this.mySessionId)
+    if (player) callback.call(context, 'activity', player.activity, this.mySessionId)
   }
 
   onPlayerVoiceActivity(callback: (playerId: string, speaking: boolean) => void, context?: any) {
@@ -668,6 +683,10 @@ export default class Network {
   updatePlayerTint(tint: number) {
     this.lastPlayerTint = tint
     this.room?.send(Message.UPDATE_PLAYER_TINT, { tint })
+  }
+  updatePlayerAppearance(appearance: string) {
+    this.lastPlayerAppearance = appearance
+    this.room?.send(Message.UPDATE_PLAYER_APPEARANCE, { appearance })
   }
 
   updateTeamLabel(teamLabel: string) {
@@ -812,3 +831,4 @@ export default class Network {
   }
 
 }
+

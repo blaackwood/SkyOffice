@@ -1,64 +1,40 @@
-import Adam from './images/login/Adam_login.png'
-import Ash from './images/login/Ash_login.png'
-import Lucy from './images/login/Lucy_login.png'
-import Nancy from './images/login/Nancy_login.png'
-
-// the only 4 body sprites that exist in this project today — "simplified
-// avatar" means picking one of these + a color, not layered hair/clothes
-// (there's no pixel-art asset for that yet)
-export const AVATAR_BASES = [
-  { name: 'adam', img: Adam },
-  { name: 'ash', img: Ash },
-  { name: 'lucy', img: Lucy },
-  { name: 'nancy', img: Nancy },
-]
-
-// small, curated color palette applied as a Phaser sprite tint. 0xffffff
-// means "no tint" (the sprite's original colors)
-export const AVATAR_TINTS: { name: string; value: number }[] = [
-  { name: 'Original', value: 0xffffff },
-  { name: 'Coral', value: 0xff8a65 },
-  { name: 'Lime', value: 0xaed581 },
-  { name: 'Sky', value: 0x64b5f6 },
-  { name: 'Lavender', value: 0xba68c8 },
-  { name: 'Sun', value: 0xffd54f },
-  { name: 'Rose', value: 0xf06292 },
-]
-
-export type AvatarChoice = {
-  avatar: string
-  tint: number
-}
-
+import manifestData from './data/atelier-avatar.json'
+export type AvatarPartId = 'skin' | 'hair' | 'top' | 'jacket' | 'bottom' | 'shoes' | 'hat' | 'glasses'
+export type AvatarChoice = { avatar: string; tint: number; parts?: Partial<Record<AvatarPartId, string>> }
 export const DEFAULT_AVATAR_CHOICE: AvatarChoice = {
-  avatar: AVATAR_BASES[0].name,
-  tint: AVATAR_TINTS[0].value,
+  avatar: 'atelier', tint: 0xffffff,
+  parts: { skin: 'skin_02', hair: 'hair_01', top: 'top_01', jacket: 'jacket_01', bottom: 'pants_01', shoes: 'shoes_01', hat: '', glasses: '' },
 }
-
-const storageKey = (name: string) => `skyoffice_avatar_${name.trim().toLowerCase()}`
-
-// avatar choices are saved per player name in this browser, so joining
-// again under the same name restores the same look automatically
+export const AVATAR_TINTS = [{ name: 'Original', value: 0xffffff }]
+export function normalizeAvatarParts(input: AvatarChoice['parts']): NonNullable<AvatarChoice['parts']> {
+  const result: NonNullable<AvatarChoice['parts']> = {}
+  for (const part of Object.keys(DEFAULT_AVATAR_CHOICE.parts!) as AvatarPartId[]) {
+    const slot = part === 'bottom' ? 'pants' : part
+    const value = input?.[part]
+    const required = ['skin', 'bottom', 'shoes', 'top'].includes(part)
+    const valid = manifestData.items.some(item => item.slot === slot && item.id === value)
+    // Existing names retain a usable avatar even if their old item IDs no longer exist.
+    result[part] = valid ? value! : value === '' && !required ? '' : DEFAULT_AVATAR_CHOICE.parts![part]!
+  }
+  return result
+}
+export function normalizeAvatarChoice(choice: AvatarChoice): AvatarChoice {
+  return { avatar: 'atelier', tint: 0xffffff, parts: normalizeAvatarParts(choice.parts) }
+}
+const storageKey = (name: string) => `skyoffice_avatar_${name.trim().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').toLowerCase()}`
 export function loadSavedAvatar(name: string): AvatarChoice | null {
-  if (!name) return null
+  if (!name.trim()) return null
   try {
-    const raw = window.localStorage.getItem(storageKey(name))
+    const raw = localStorage.getItem(storageKey(name)) || localStorage.getItem(`skyoffice_avatar_${name.trim().toLowerCase()}`)
     if (!raw) return null
-    const parsed = JSON.parse(raw)
-    if (typeof parsed.avatar === 'string' && typeof parsed.tint === 'number') {
-      return parsed
-    }
-    return null
-  } catch {
-    return null
-  }
+    const saved = JSON.parse(raw)
+    if (!saved || typeof saved !== 'object' || (!saved.parts && typeof saved.avatar !== 'string')) return null
+    const choice = normalizeAvatarChoice(saved)
+    saveAvatar(name, choice)
+    return choice
+  } catch { return null }
 }
-
 export function saveAvatar(name: string, choice: AvatarChoice) {
-  if (!name) return
-  try {
-    window.localStorage.setItem(storageKey(name), JSON.stringify(choice))
-  } catch {
-    // storage unavailable (private mode, quota, etc.) — not critical, skip silently
-  }
+  if (!name.trim()) return
+  try { localStorage.setItem(storageKey(name), JSON.stringify(normalizeAvatarChoice(choice))) } catch { /* Storage may be unavailable. */ }
 }

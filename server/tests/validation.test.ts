@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import './playerActivity.test'
 import { selectNearestAvailableMeetingRoom, MeetingRoomCandidate } from '../rooms/MeetingRoomSelection'
 import { brasiliaChatClearCycleKey, brasiliaDayKey, millisecondsUntilBrasiliaChatClear, shouldClearDailyChat } from '../../types/DailyChatSchedule'
 

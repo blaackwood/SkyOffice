@@ -8,12 +8,14 @@ export interface IPlayer extends Schema {
   y: number
   anim: string
   tint: number
+  avatarAppearance: string
   readyToConnect: boolean
   videoConnected: boolean
   cameraEnabled: boolean
   microphoneEnabled: boolean
   status: 'active' | 'busy' | 'away'
   deskIndex: number
+  activity: string
 }
 
 export interface IComputer extends Schema {
@@ -53,3 +55,5 @@ export interface IOfficeState extends Schema {
   deskDecorations: MapSchema<IDeskDecoration>
   desks: MapSchema<IDeskSlot>
 }
+
+

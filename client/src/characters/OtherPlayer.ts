@@ -5,6 +5,9 @@ import { sittingShiftData } from './Player'
 import WebRTC from '../web/WebRTC'
 import { Event, phaserEvents } from '../events/EventCenter'
 
+const PROXIMITY_EXIT_DISTANCE = 340
+const PROXIMITY_EXIT_DELAY_MS = 800
+
 export default class OtherPlayer extends Player {
   private targetPosition: [number, number]
   private lastUpdateTimestamp?: number
@@ -67,7 +70,10 @@ export default class OtherPlayer extends Player {
       // code believes the pair is connected forever and only moving away and
       // back creates a new attempt. Retry the stuck call automatically.
       if (!this.connectionAttemptStartedAt) this.connectionAttemptStartedAt = Date.now()
-      if (Date.now() - this.connectionAttemptStartedAt >= 4000) {
+      // Do not leave a dead PeerJS entry blocking the next proximity attempt.
+      // A healthy stream arrives well before this; retry quickly after a
+      // player leaves and comes back.
+      if (Date.now() - this.connectionAttemptStartedAt >= 2000) {
         phaserEvents.emit(Event.PLAYER_DISCONNECTED, this.playerId)
         this.connected = false
         this.connectionBufferTime = 0
@@ -124,9 +130,15 @@ export default class OtherPlayer extends Player {
 
       case 'anim':
         if (typeof value === 'string') {
-          this.remoteSitAnimation = value.includes('_sit_') ? value : undefined
-          this.anims.play(value, true)
+          const suffix = value.match(/_(idle|run|sit)_(up|down|left|right)$/)?.[0]
+          if (!suffix) break
+          this.remoteSitAnimation = suffix.startsWith('_sit_') ? suffix : undefined
+          this.anims.play(this.playerTexture + suffix, true)
         }
+        break
+
+      case 'avatarAppearance':
+        if (typeof value === 'string') this.setAvatarAppearance(value)
         break
 
       case 'readyToConnect':
@@ -174,8 +186,8 @@ export default class OtherPlayer extends Player {
     super.preUpdate(t, dt)
     // Sit is a one-frame pose; keep it applied while the server reports that
     // this player is sitting so interpolation cannot make the pose look idle.
-    if (this.remoteSitAnimation && this.anims.currentAnim?.key !== this.remoteSitAnimation) {
-      this.anims.play(this.remoteSitAnimation, true)
+    if (this.remoteSitAnimation && this.anims.currentAnim?.key !== this.playerTexture + this.remoteSitAnimation) {
+      this.anims.play(this.playerTexture + this.remoteSitAnimation, true)
     }
 
     // if Phaser has not updated the canvas (when the game tab is not active) for more than 1 sec
@@ -191,10 +203,10 @@ export default class OtherPlayer extends Player {
 
     this.lastUpdateTimestamp = t
     this.setDepth(this.y) // change player.depth based on player.y
-    const animParts = this.anims.currentAnim.key.split('_')
-    const animState = animParts[1]
-    if (animState === 'sit') {
-      const animDir = animParts[2]
+    const currentAnimation = this.anims.currentAnim.key
+    const sitMarker = currentAnimation.lastIndexOf('_sit_')
+    if (sitMarker >= 0) {
+      const animDir = currentAnimation.slice(sitMarker + 5)
       const sittingShift = sittingShiftData[animDir]
       // Guard against a missing/malformed depth entry: falling back to 0
       // keeps this.depth a real number instead of NaN, which would otherwise
@@ -243,8 +255,8 @@ export default class OtherPlayer extends Player {
     if (
       this.connected &&
       !this.body.embedded &&
-      Phaser.Math.Distance.Between(this.x, this.y, this.myPlayer!.x, this.myPlayer!.y) > 300 &&
-      this.connectionBufferTime >= 750
+      Phaser.Math.Distance.Between(this.x, this.y, this.myPlayer!.x, this.myPlayer!.y) > PROXIMITY_EXIT_DISTANCE &&
+      this.connectionBufferTime >= PROXIMITY_EXIT_DELAY_MS
     ) {
       phaserEvents.emit(Event.PLAYER_DISCONNECTED, this.playerId)
       this.connectionBufferTime = 0
@@ -298,3 +310,4 @@ Phaser.GameObjects.GameObjectFactory.register(
     return sprite
   }
 )
+

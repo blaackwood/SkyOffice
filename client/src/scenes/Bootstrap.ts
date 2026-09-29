@@ -1,3 +1,5 @@
+import { getAvatarTextureKey } from '../services/AvatarRenderer'
+import { DEFAULT_AVATAR_CHOICE } from '../avatarConfig'
 import Phaser from 'phaser'
 import Network from '../services/Network'
 import { BackgroundMode } from '../../../types/BackgroundMode'
@@ -33,7 +35,9 @@ export default class Bootstrap extends Phaser.Scene {
     this.load.tilemapTiledJSON('collision_map', 'assets/map/map-collision.json')
     this.load.image('gather_map', 'assets/map/gather-map.png')
     this.load.json('room_areas', 'assets/map/room-areas.json')
-    this.load.json('seat_map', 'assets/map/seat-map.json')
+    // Keep seat edits visible immediately during local testing instead of
+    // reusing a browser-cached copy of the previous downloaded map.
+    this.load.json('seat_map', 'assets/map/seat-map.json?seatMapVersion=2')
     this.load.image('collision_tile', 'assets/map/collision-tile.png')
     this.load.spritesheet('tiles_wall', 'assets/map/FloorAndGround.png', {
       frameWidth: 32,
@@ -72,23 +76,6 @@ export default class Bootstrap extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 32,
     })
-    this.load.spritesheet('adam', 'assets/character/adam.png', {
-      frameWidth: 32,
-      frameHeight: 48,
-    })
-    this.load.spritesheet('ash', 'assets/character/ash.png', {
-      frameWidth: 32,
-      frameHeight: 48,
-    })
-    this.load.spritesheet('lucy', 'assets/character/lucy.png', {
-      frameWidth: 32,
-      frameHeight: 48,
-    })
-    this.load.spritesheet('nancy', 'assets/character/nancy.png', {
-      frameWidth: 32,
-      frameHeight: 48,
-    })
-
     this.load.on('complete', () => {
       this.preloadComplete = true
       this.launchBackground(store.getState().user.backgroundMode)
@@ -107,11 +94,24 @@ export default class Bootstrap extends Phaser.Scene {
     this.scene.launch('background', { backgroundMode })
   }
 
-  launchGame() {
+  private avatarLaunchPending = false
+
+  async launchGame() {
     if (!this.preloadComplete) {
       this.gameLaunchRequested = true
       return
     }
+    if (this.avatarLaunchPending || this.scene.isActive('game')) return
+    this.avatarLaunchPending = true
+    try {
+      await getAvatarTextureKey(this, DEFAULT_AVATAR_CHOICE.parts)
+    } catch (error) {
+      this.avatarLaunchPending = false
+      console.error('Não foi possível carregar o avatar inicial', error)
+      window.setTimeout(() => { void this.launchGame() }, 2000)
+      return
+    }
+    this.avatarLaunchPending = false
     this.scene.launch('game', {
       network: this.network,
     })
@@ -128,3 +128,4 @@ export default class Bootstrap extends Phaser.Scene {
     this.launchBackground(backgroundMode)
   }
 }
+

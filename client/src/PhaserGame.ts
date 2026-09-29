@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import Game from './scenes/Game'
 import Background from './scenes/Background'
 import Bootstrap from './scenes/Bootstrap'
+import { installFreezeDiagnostics } from './services/FreezeDiagnostics'
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -29,6 +30,11 @@ const config: Phaser.Types.Core.GameConfig = {
 // canvas stacked below the visible page and can make the office appear gone.
 const gameWindow = window as Window & { __skyOfficePhaserGame?: Phaser.Game; game?: Phaser.Game }
 const phaserGame = gameWindow.__skyOfficePhaserGame ?? new Phaser.Game(config)
+
+if (!gameWindow.__skyOfficePhaserGame) {
+  if (phaserGame.isBooted) installFreezeDiagnostics(phaserGame.canvas)
+  else phaserGame.events.once('ready', () => installFreezeDiagnostics(phaserGame.canvas))
+}
 gameWindow.__skyOfficePhaserGame = phaserGame
 gameWindow.game = phaserGame
 

@@ -16,6 +16,7 @@ export const userSlice = createSlice({
     backgroundMode: getInitialBackgroundMode(),
     sessionId: '',
     myPlayerName: '',
+    myActivity: '',
     videoConnected: false,
     micEnabled: false,
     cameraEnabled: false,
@@ -24,6 +25,9 @@ export const userSlice = createSlice({
     showJoystick: window.innerWidth < 650,
   },
   reducers: {
+    setMyActivity: (state, action: PayloadAction<string>) => {
+      state.myActivity = action.payload
+    },
     toggleBackgroundMode: (state) => {
       const newMode =
         state.backgroundMode === BackgroundMode.DAY ? BackgroundMode.NIGHT : BackgroundMode.DAY
@@ -63,6 +67,7 @@ export const userSlice = createSlice({
 })
 
 export const {
+  setMyActivity,
   toggleBackgroundMode,
   setSessionId,
   setMyPlayerName,

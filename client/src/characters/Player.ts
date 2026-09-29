@@ -1,5 +1,8 @@
 import Phaser from 'phaser'
+import { PlayerActivity } from '../../../types/PlayerActivity'
 import { PlayerBehavior } from '../../../types/PlayerBehavior'
+import { getAvatarTextureKey } from '../services/AvatarRenderer'
+import { normalizeAvatarParts } from '../avatarConfig'
 /**
  * Pixel alignment from the Tiled seat marker to the seated sprite origin.
  * Third value is a depth (render order) correction applied on top of the
@@ -34,6 +37,8 @@ const statusDotColors: Record<'active' | 'busy' | 'away', number> = {
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   playerId: string
   playerTexture: string
+  basePlayerTexture: string
+  avatarAppearance = ''
   playerBehavior = PlayerBehavior.IDLE
   readyToConnect = false
   videoConnected = false
@@ -49,6 +54,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   private playerNameBadgeHeight = -1
   private playerDialogBubble: Phaser.GameObjects.Container
   private timeoutID?: number
+  private activityState?: PlayerActivity
+  private activityLabel: Phaser.GameObjects.Text
+  private studySessionPresent = false
 
   constructor(
     scene: Phaser.Scene,
@@ -62,6 +70,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.playerId = id
     this.playerTexture = texture
+    this.basePlayerTexture = texture
     this.setDepth(this.y)
 
     this.anims.play(`${this.playerTexture}_idle_down`, true)
@@ -87,6 +96,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.playerContainer.add(this.playerNameBadge)
     this.playerContainer.add(this.playerName)
     this.playerContainer.add(this.playerNameDot)
+    this.activityLabel = this.scene.add.text(0, -16, '', {
+      fontFamily: 'Arial', fontSize: '10px', color: '#e0d6b5', align: 'center',
+      backgroundColor: '#29251c', padding: { left: 5, right: 5, top: 2, bottom: 2 },
+      wordWrap: { width: 160, useAdvancedWrap: true },
+    }).setOrigin(0.5, 1).setVisible(false)
+    this.playerContainer.add(this.activityLabel)
 
     // Small Gather-style speech indicator shown while this player's microphone
     // is actively picking up voice. It stays in the world with the avatar so
@@ -114,6 +129,22 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       .setOffset(-8, this.height * (1 - collisionScale[1]) + 6)
   }
 
+  private avatarLoadRequest = 0
+  setAvatarAppearance(appearance: string) {
+    const request = ++this.avatarLoadRequest
+    let parts
+    try { parts = normalizeAvatarParts(appearance ? JSON.parse(appearance) : undefined) }
+    catch { parts = normalizeAvatarParts(undefined) }
+    this.avatarAppearance = JSON.stringify(parts)
+    void getAvatarTextureKey(this.scene, parts).then(texture => {
+      if (!this.scene || request !== this.avatarLoadRequest) return
+      const suffix = this.anims.currentAnim?.key.split('_').slice(-2).join('_') || 'idle_down'
+      this.playerTexture = texture
+      this.setTint(0xffffff)
+      const animation = texture + '_' + suffix
+      this.anims.play(this.scene.anims.exists(animation) ? animation : texture + '_idle_down', true)
+    }).catch(error => { console.warn('Falha ao carregar aparência do avatar', error) })
+  }
   // Keep the badge and online dot sized and positioned around each player's name.
   preUpdate(time: number, delta: number) {
     super.preUpdate(time, delta)
@@ -143,6 +174,23 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   // recolor the status dot next to the name (active/busy/away)
   setStatus(status: 'active' | 'busy' | 'away') {
     this.playerNameDot.setFillStyle(statusDotColors[status] ?? statusDotColors.active)
+  }
+
+  setActivity(value: string) {
+    try { this.activityState = value ? JSON.parse(value) : undefined }
+    catch { this.activityState = undefined }
+    const label = this.activityState?.label || ''
+    this.activityLabel.setText(['Estudando', 'Fazendo simulado'].includes(label) ? '' : label)
+    this.setStudySessionPresent(this.studySessionPresent)
+  }
+
+  setStudySessionPresent(present: boolean): void {
+    this.studySessionPresent = present
+    this.activityLabel.setVisible(present && Boolean(this.activityLabel.text))
+  }
+
+  getStudyBadgeY(): number {
+    return this.activityLabel.visible ? this.activityLabel.y - this.activityLabel.height - 3 : -29
   }
 
   setMicrophoneEnabled(enabled: boolean) {
@@ -194,3 +242,4 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.playerDialogBubble.removeAll(true)
   }
 }
+

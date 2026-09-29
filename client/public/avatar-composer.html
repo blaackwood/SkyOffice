@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ajustar personagem</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#191e25;color:#eef2f7;font:15px system-ui;padding:24px}.editor{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start}figure{margin:0;width:320px;background:#30383c;border:1px solid #58656f;border-radius:12px;overflow:hidden}canvas{display:block;width:100%;height:auto;image-rendering:pixelated}figcaption{padding:12px;text-align:center;font-size:13px;color:#c4d5d7}main{width:340px;padding:24px;background:#272e3c;border-radius:12px}h1{font-size:22px;margin:0 0 12px}p,small{line-height:1.5;color:#c5cfdd}label{display:block;margin:20px 0 8px}input[type=range]{width:100%;accent-color:#55d6bd}output{float:right;font-variant-numeric:tabular-nums}select,button{font:inherit;padding:10px;border-radius:6px;border:1px solid #657183}select{width:100%;background:#191e25;color:white}button{cursor:pointer;margin:18px 6px 0 0;background:#55d6bd;color:#10221f;font-weight:600}button.secondary{background:transparent;color:white}small{display:block;margin-top:18px;font-size:12px}#status{margin:0;padding:14px;text-align:center}button:disabled,input:disabled{opacity:.5}
+</style></head><body><div class="editor">
+<figure><canvas id="preview" width="128" height="192" aria-label="Prévia editável do personagem"></canvas><p id="status" role="status">Carregando camadas…</p><figcaption>Prévia do mesmo renderizador usado no jogo.</figcaption></figure>
+<main><h1>Ajustar personagem</h1><p>O encaixe automático já é usado pelo jogo. Troque a roupa para conferir. As barras permitem testar ajustes manuais.</p>
+<label><input id="automatic" type="checkbox" checked> Ajustar mãos à roupa automaticamente</label><label for="body">Base do personagem</label><select id="body"><option value="female" selected>Feminina</option><option value="male">Masculina</option></select><label for="hairstyle">Cabelo</label><select id="hairstyle"><option value="hair_06">Longo preto</option><option value="hair_09">Rabo de cavalo</option><option value="hair_12">Chanel loiro</option><option value="hair_01">Preto lateral</option></select><label for="direction">Direção</label><select id="direction"><option value="down">Frente</option><option value="up">Costas</option><option value="left">Esquerda</option><option value="right">Direita</option></select><label for="pose">Movimento</label><select id="pose"><option value="idle">Parada</option><option value="walk">Andando</option><option value="sit">Sentada</option></select><label for="outfit">Roupa</label><select id="outfit"><option value="jacket">Com jaqueta</option><option value="shirt">Só blusa</option></select>
+<label for="hand">Altura das mãos <output id="handOut">0</output></label><input id="hand" type="range" min="-12" max="12" value="0" disabled>
+<label for="open">Abertura dos braços <output id="openOut">6</output></label><input id="open" type="range" min="-8" max="16" value="6" disabled>
+<label for="waist">Limite da pele na cintura <output id="waistOut">61</output></label><input id="waist" type="range" min="48" max="68" value="61" disabled>
+<button id="download" disabled>Baixar ajustes</button><button id="reset" class="secondary">Restaurar</button>
+<small>O encaixe automático não precisa de arquivo: já está aplicado no personagem. As barras e o download servem apenas para experimentar ajustes manuais neste editor.</small></main></div>
+<script type="module">
+import { loadAvatarLayers, drawAvatarFrame, drawSeatedAvatar, WALK_FRAMES } from "/src/services/AtelierAvatar.ts";
+let runtimeJacket, runtimeShirt, loadVersion=0, animationFrame=0;
+const canvas=document.querySelector('#preview'),ctx=canvas.getContext('2d');
+const status=document.querySelector('#status');
+const defaults={hand:0,open:6,waist:61};
+const values={...defaults};
+try{const saved=JSON.parse(localStorage.getItem('avatar-composer-v2'));for(const key of Object.keys(values)){const input=document.getElementById(key);if(Number.isFinite(saved?.[key]))values[key]=Math.max(+input.min,Math.min(+input.max,saved[key]));}}catch{}
+const layers={};
+function paint(slot,x=0,y=0,w=128,h=192,dx=x,dy=y){ctx.drawImage(layers[slot],x,y,w,h,dx,dy,w,h);}
+function draw(){
+ if(!layers.hair)return;
+ ctx.clearRect(0,0,128,192);ctx.imageSmoothingEnabled=false;
+ if(document.querySelector("#automatic").checked && runtimeJacket){const loaded=document.querySelector("#outfit").value === "jacket" ? runtimeJacket : runtimeShirt; const direction=document.querySelector("#direction").value; const pose=document.querySelector("#pose").value; if(pose==="sit")drawSeatedAvatar(ctx,loaded,direction,1,128);else drawAvatarFrame(ctx,loaded,direction,pose==="walk"?WALK_FRAMES[animationFrame%WALK_FRAMES.length]:0,128);return;}
+ // Isolate the hands before dressing the body, so their old positions never remain on the trousers.
+ ctx.save();ctx.beginPath();ctx.rect(0,0,128,108);ctx.rect(49,108,30,Math.max(0,values.waist*2-108));ctx.clip();paint('skin');ctx.restore();
+ paint('pants');paint('shoes');
+ if(document.querySelector('#outfit').value==='jacket'){paint('top',42,0,44,192);paint('jacket');}else paint('top');
+ // Source rectangles contain only the two hands in the neutral front frame.
+ paint('skin',35,108,14,21,35-values.open,108+values.hand);
+ paint('skin',79,108,14,21,79+values.open,108+values.hand);
+ paint('hair');
+}
+function sync(){for(const key of Object.keys(values)){document.getElementById(key).value=values[key];document.getElementById(key+'Out').value=values[key];}draw();}
+document.querySelector("#automatic").addEventListener("change",()=>{sync();});
+function persist(){try{localStorage.setItem('avatar-composer-v2',JSON.stringify(values));}catch{}}
+for(const key of Object.keys(values))document.getElementById(key).addEventListener('input',e=>{document.querySelector("#automatic").checked=false;values[key]=+e.target.value;sync();persist();});
+document.querySelector('#outfit').addEventListener('change',draw);
+document.querySelector('#reset').addEventListener('click',()=>{Object.assign(values,defaults);sync();persist();});
+document.querySelector('#download').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(values,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='avatar-adjustments.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+async function start(){const version=++loadVersion;const skinId=document.querySelector("#body").value==="female"?"skin_female_02":"skin_02";const hairId=document.querySelector("#hairstyle").value;status.textContent="Carregando camadas…";try{
+ const entries=await Promise.all(Object.entries({skin:skinId,pants:'pants_01',shoes:'shoes_01',top:'top_04',jacket:'jacket_04',hair:hairId}).map(async([slot,id])=>{const img=new Image();const url=new URL(`assets/atelier-avatar/sheets/down/${slot}/${id}.png`,location.href);await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error(`Não foi possível carregar ${slot}/${id}.png`));img.src=url.href;});return[slot,img];}));
+ if(version!==loadVersion)return;Object.assign(layers,Object.fromEntries(entries));
+ const parts={skin:skinId,hair:hairId,top:"top_04",jacket:"jacket_04",bottom:"pants_01",shoes:"shoes_01",hat:"",glasses:""};
+ const loaded=await Promise.all([loadAvatarLayers(parts,["down","up","left","right"]),loadAvatarLayers({...parts,jacket:""},["down","up","left","right"])]);if(version!==loadVersion)return;[runtimeJacket,runtimeShirt]=loaded;sync();document.querySelectorAll('input,button').forEach(el=>el.disabled=false);status.textContent='Prévia pronta';
+ }catch(error){status.textContent=error.message;status.style.color='#ffb4b4';}}
+for(const id of ["body","hairstyle"])document.getElementById(id).addEventListener("change",start);for(const id of ["direction","pose"])document.getElementById(id).addEventListener("change",draw);setInterval(()=>{if(document.querySelector("#pose").value==="walk"){animationFrame++;draw();}},1000/15);sync();start();
+</script></body></html>
+<style>body{padding:16px}.editor{gap:16px}figure{width:240px;flex:0 0 240px;position:sticky;top:16px}main{width:280px;padding:18px;flex:1;max-width:340px;min-width:230px}@media(max-width:510px){figure{width:200px;flex-basis:200px}main{max-width:100%}}</style>
+
+
+
+

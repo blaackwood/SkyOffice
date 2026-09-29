@@ -13,14 +13,16 @@ export class Player extends Schema implements IPlayer {
   @type('string') name = ''
   @type('number') x = 705
   @type('number') y = 500
-  @type('string') anim = 'adam_idle_down'
+  @type('string') anim = 'atelier_idle_down'
   @type('number') tint = 0xffffff
+  @type('string') avatarAppearance = ''
   @type('boolean') readyToConnect = false
   @type('boolean') videoConnected = false
   @type('boolean') cameraEnabled = false
   @type('boolean') microphoneEnabled = false
   @type('string') status: 'active' | 'busy' | 'away' = 'active'
   @type('number') deskIndex = -1
+  @type('string') activity = ''
 }
 
 export class DeskDecoration extends Schema implements IDeskDecoration {
@@ -92,3 +94,5 @@ function getRoomId(): string {
     return getRoomId()
   }
 }
+
+

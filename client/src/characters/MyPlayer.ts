@@ -49,19 +49,21 @@ export default class MyPlayer extends Player {
   }
 
   setPlayerTexture(texture: string) {
+    this.basePlayerTexture = texture
+    if (this.avatarAppearance) {
+      this.setAvatarAppearance(this.avatarAppearance)
+      return
+    }
     this.playerTexture = texture
-    const currentParts = this.anims.currentAnim?.key.split('_') ?? []
-    const action = this.playerBehavior === PlayerBehavior.SITTING
-      ? 'sit'
-      : currentParts[1] === 'run' ? 'run' : 'idle'
-    const direction = currentParts[2] ?? 'down'
-    const nextAnimation = `${texture}_${action}_${direction}`
-    const fallbackAnimation = `${texture}_idle_down`
+    const suffix = this.anims.currentAnim?.key.split('_').slice(-2) ?? []
+    const action = this.playerBehavior === PlayerBehavior.SITTING ? 'sit' : suffix[0] === 'run' ? 'run' : 'idle'
+    const direction = suffix[1] ?? 'down'
+    const nextAnimation = texture + '_' + action + '_' + direction
+    const fallbackAnimation = texture + '_idle_down'
     const animation = this.scene.anims.exists(nextAnimation) ? nextAnimation : fallbackAnimation
     this.anims.play(animation, true)
     phaserEvents.emit(Event.MY_PLAYER_TEXTURE_CHANGE, this.x, this.y, animation)
   }
-
   handleJoystickMovement(movement: JoystickMovement) {
     this.joystickMovement = movement
   }
@@ -101,6 +103,8 @@ export default class MyPlayer extends Player {
     if (this.playerBehavior === PlayerBehavior.SITTING || !chairItem.itemDirection || this.chairOnSit === chairItem) return
     this.setVelocity(0, 0)
     this.playContainerBody.setVelocity(0, 0)
+    this.body.enable = false
+    this.playContainerBody.enable = false
     const direction = chairItem.itemDirection
     const sitAnimation = `${this.playerTexture}_sit_${direction}`
     this.sitExitArmed = false
@@ -113,6 +117,11 @@ export default class MyPlayer extends Player {
     const sitY = chairItem.y + shift[1]
     this.setPosition(sitX, sitY).setDepth(sitY).play(sitAnimation, true)
     this.playerContainer.setPosition(this.x, this.y - 30)
+    // Apply the seat mask in the same frame as the snap. Waiting for the next
+    // Game.update allowed the first seated frame to briefly use a nearby/old
+    // mask, which made the same chair look different after re-entering it.
+    this.clearMask(false)
+    if (chairItem.playerMask) this.setMask(chairItem.playerMask)
     playerSelector.selectedItem = undefined
     playerSelector.setPosition(direction === 'up' ? this.x : 0, direction === 'up' ? this.y - this.height : 0)
     network.updatePlayer(this.x, this.y, sitAnimation)
@@ -209,7 +218,6 @@ export default class MyPlayer extends Player {
         this.playContainerBody.velocity.setLength(speed)
 
         // update animation according to velocity and send new location and anim to server
-        if (vx !== 0 || vy !== 0) network.updatePlayer(this.x, this.y, this.anims.currentAnim.key)
         if (vx > 0) {
           this.play(`${this.playerTexture}_run_right`, true)
         } else if (vx < 0) {
@@ -219,16 +227,17 @@ export default class MyPlayer extends Player {
         } else if (vy < 0) {
           this.play(`${this.playerTexture}_run_up`, true)
         } else {
-          const parts = this.anims.currentAnim.key.split('_')
-          parts[1] = 'idle'
-          const newAnim = parts.join('_')
+          const direction = this.anims.currentAnim.key.split('_').slice(-1)[0] || 'down'
+          const newAnim = this.playerTexture + '_idle_' + direction
           // this prevents idle animation keeps getting called
           if (this.anims.currentAnim.key !== newAnim) {
-            this.play(parts.join('_'), true)
+            this.play(newAnim, true)
             // send new location and anim to server
             network.updatePlayer(this.x, this.y, this.anims.currentAnim.key)
           }
         }
+        // Broadcast the new facing direction on the first step as well.
+        if (vx !== 0 || vy !== 0) network.updatePlayer(this.x, this.y, this.anims.currentAnim.key)
         break
 
       case PlayerBehavior.SITTING:
@@ -242,9 +251,8 @@ export default class MyPlayer extends Player {
         const movementPressed = movementKeys.some((key) => key && Phaser.Input.Keyboard.JustDown(key))
         if (this.sitExitArmed && (movementPressed || this.joystickMovement?.isMoving || this.autoWalkPath.length > 0)) {
           this.sitExitArmed = false
-          const parts = this.anims.currentAnim.key.split('_')
-          parts[1] = 'idle'
-          this.play(parts.join('_'), true)
+          const direction = this.anims.currentAnim.key.split('_').slice(-1)[0] || 'down'
+          this.play(this.playerTexture + '_idle_' + direction, true)
           this.playerBehavior = PlayerBehavior.IDLE
           // The seated pose is drawn tucked into the furniture; step back out to
           // the open floor tile in front of it so the physics body never ends up
@@ -255,6 +263,8 @@ export default class MyPlayer extends Player {
             this.setPosition(this.chairOnSit.x + stand[0], this.chairOnSit.y + stand[1]).setDepth(this.y)
             this.playerContainer.setPosition(this.x, this.y - 30)
           }
+          this.body.enable = true
+          this.playContainerBody.enable = true
           this.chairOnSit?.clearDialogBox()
           playerSelector.setPosition(this.x, this.y)
           playerSelector.update(this, cursors)
@@ -301,3 +311,5 @@ Phaser.GameObjects.GameObjectFactory.register(
     return sprite
   }
 )
+
+

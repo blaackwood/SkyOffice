@@ -197,6 +197,8 @@ export default class Game extends Phaser.Scene {
     phaserEvents.on(Event.MEETING_WALK_STARTED, this.handleMeetingWalkStarted, this)
     phaserEvents.on(Event.STUDY_SESSION_STARTED, this.handleStudySessionStarted, this)
     phaserEvents.on(Event.STUDY_SESSIONS_REFRESH, this.refreshLiveStudyMap, this)
+    phaserEvents.on(Event.MY_PLAYER_NAME_CHANGE, this.refreshLiveStudyMap, this)
+    document.addEventListener('visibilitychange', this.refreshStudyOnReturn)
     this.loadRoomDoors()
     window.addEventListener('storage', this.handleDoorLayoutStorage)
 
@@ -237,6 +239,8 @@ export default class Game extends Phaser.Scene {
       phaserEvents.off(Event.MEETING_WALK_STARTED, this.handleMeetingWalkStarted, this)
       phaserEvents.off(Event.STUDY_SESSION_STARTED, this.handleStudySessionStarted, this)
       phaserEvents.off(Event.STUDY_SESSIONS_REFRESH, this.refreshLiveStudyMap, this)
+      phaserEvents.off(Event.MY_PLAYER_NAME_CHANGE, this.refreshLiveStudyMap, this)
+      document.removeEventListener('visibilitychange', this.refreshStudyOnReturn)
       if (this.studyPresenceTimer) window.clearInterval(this.studyPresenceTimer)
       this.studyPresenceTimer = undefined
       this.studyDeskStations.forEach(({ glow, lamp, label }) => { glow.destroy(); lamp.destroy(); label.destroy() })
@@ -351,7 +355,7 @@ export default class Game extends Phaser.Scene {
       : undefined
     const spawnX = spawn?.x ?? 1088
     const spawnY = spawn?.y ?? 1024
-    this.myPlayer = this.add.myPlayer(spawnX, spawnY, 'adam', this.network.mySessionId)
+    this.myPlayer = this.add.myPlayer(spawnX, spawnY, 'atelier', this.network.mySessionId)
     this.myPlayer.setCollideWorldBounds(true)
     ;(this.myPlayer.playerContainer.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true)
     this.playerSelector = new PlayerSelector(this, 0, 0, 16, 16)
@@ -402,7 +406,9 @@ export default class Game extends Phaser.Scene {
 
     this.createStudyDeskStations()
     void this.refreshLiveStudyMap()
-    this.studyPresenceTimer = window.setInterval(() => { void this.refreshLiveStudyMap() }, 15000)
+    this.studyPresenceTimer = window.setInterval(() => {
+      if (!document.hidden) void this.refreshLiveStudyMap()
+    }, 3000)
 
     // Debug: open the game with ?debugSeats in the URL (e.g. http://localhost:5173/?debugSeats)
     // to see every seat's index in seat-map.json (white label), the seat point (red dot) and
@@ -471,10 +477,10 @@ export default class Game extends Phaser.Scene {
     this.cameras.main.startFollow(this.myPlayer, true)
     this.isFollowingPlayer = true
 
-    // allow zooming in/out with the mouse scroll wheel (listening on window so
-    // it still works even if the pointer is over a UI element on top of the canvas)
+    // Map zoom only responds to the wheel over the map canvas. Scrolling lists,
+    // chat, dialogs, and avatar customization must never zoom the world.
     const handleWheelZoom = (event: WheelEvent) => {
-      if (event.target instanceof Element && event.target.closest('.skyoffice-desk-editor')) return
+      if (event.target !== gameCanvas || this.deskEditorMode) return
       const newZoom = this.cameras.main.zoom - event.deltaY * 0.001
       this.cameras.main.zoom = Phaser.Math.Clamp(newZoom, 0.1, 3)
     }
@@ -715,6 +721,10 @@ export default class Game extends Phaser.Scene {
     })
   }
 
+  private refreshStudyOnReturn = () => {
+    if (!document.hidden) void this.refreshLiveStudyMap()
+  }
+
   private async refreshLiveStudyMap() {
     if (this.studySessionPollInFlight || !this.scene.isActive()) return
     this.studySessionPollInFlight = true
@@ -758,7 +768,6 @@ export default class Game extends Phaser.Scene {
       if (!existing || session.runningSince > existing.runningSince) sessionByName.set(key, session)
     })
 
-    const seatedStudyers = new Set<string>()
     this.studyDeskStations.forEach((station) => {
       const occupant = onlinePlayers.find((player) => player.seated &&
         Phaser.Math.Distance.Between(player.x, player.y, station.chair.x, station.chair.y) <= 28 &&
@@ -770,14 +779,15 @@ export default class Game extends Phaser.Scene {
       station.label.setVisible(Boolean(session)).setAlpha(isPaused ? 0.55 : 1)
       if (session && occupant) {
         station.label.setText(session.name)
-        seatedStudyers.add(occupant.id)
       }
     })
 
     const presentStudyIds = new Set<string>()
     onlinePlayers.forEach((player) => {
       const session = sessionByName.get(normalizeStudyName(player.name))
-      if (!session || seatedStudyers.has(player.id)) return
+      const avatar = player.id === this.network.mySessionId ? this.myPlayer : this.otherPlayerMap.get(player.id)
+      avatar?.setStudySessionPresent(Boolean(session))
+      if (!session) return
       presentStudyIds.add(player.id)
       let badge = this.studyPresenceBadges.get(player.id)
       if (!badge || !badge.active) {
@@ -789,9 +799,10 @@ export default class Game extends Phaser.Scene {
         this.studyPresenceBadges.set(player.id, badge)
       }
       const isPaused = Boolean(session.pausedAt > 0 || !session.runningSince)
-      badge.setText(isPaused ? '◷ Pausado' : '✦ Estudando')
+      const elapsed = session.accumulated + (isPaused ? 0 : Math.max(0, Date.now() - session.runningSince))
+      badge.setText(`${isPaused ? '◷ Pausado' : '✦ Estudando'} · ${Math.floor(elapsed / 60000)} min`)
         .setColor(isPaused ? '#d2b783' : '#ffe39b')
-        .setPosition(0, -29)
+        .setPosition(0, avatar?.getStudyBadgeY() ?? -29)
         .setVisible(true)
     })
     this.studyPresenceBadges.forEach((badge, id) => {
@@ -1394,7 +1405,7 @@ export default class Game extends Phaser.Scene {
   // function to add new player to the otherPlayer group
   private handlePlayerJoined(newPlayer: IPlayer, id: string) {
     if (this.otherPlayerMap.has(id)) return
-    const otherPlayer = this.add.otherPlayer(newPlayer.x, newPlayer.y, 'adam', id, newPlayer.name)
+    const otherPlayer = this.add.otherPlayer(newPlayer.x, newPlayer.y, 'atelier', id, newPlayer.name)
     const selectPlayer = (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
       event.stopPropagation()
       this.pointerOnOtherPlayer = false
@@ -1409,12 +1420,15 @@ export default class Game extends Phaser.Scene {
     otherPlayer.playerName.setInteractive({ useHandCursor: true })
     otherPlayer.playerName.on('pointerdown', beginPlayerClick)
     otherPlayer.playerName.on('pointerup', selectPlayer)
+    // Build custom frames before applying the peer's current facing/pose.
+    if (newPlayer.avatarAppearance) otherPlayer.setAvatarAppearance(newPlayer.avatarAppearance)
     if (newPlayer.anim) otherPlayer.updateOtherPlayer('anim', newPlayer.anim)
     otherPlayer.readyToConnect = newPlayer.readyToConnect
     otherPlayer.videoConnected = newPlayer.videoConnected
     otherPlayer.cameraEnabled = newPlayer.cameraEnabled
     otherPlayer.setTint(newPlayer.tint ?? 0xffffff)
     otherPlayer.setMicrophoneEnabled(newPlayer.microphoneEnabled)
+    otherPlayer.setActivity(newPlayer.activity)
     this.otherPlayers.add(otherPlayer)
     this.otherPlayerMap.set(id, otherPlayer)
   }
@@ -1439,6 +1453,11 @@ export default class Game extends Phaser.Scene {
 
   // function to update target position upon receiving player updates
   private handlePlayerUpdated(field: string, value: number | string, id: string) {
+    if (field === 'activity' && typeof value === 'string') {
+      const player = id === this.network.mySessionId ? this.myPlayer : this.otherPlayerMap.get(id)
+      player?.setActivity(value)
+      return
+    }
     const otherPlayer = this.otherPlayerMap.get(id)
     otherPlayer?.updateOtherPlayer(field, value)
   }
@@ -1517,20 +1536,27 @@ export default class Game extends Phaser.Scene {
       this.updateRoomFocus()
       // Seat direction controls the seated pose. Approach is direction-neutral;
       // normal map collisions still keep avatars from walking through furniture.
-      this.seatItems.forEach((chair) => {
-        const localSittingHere =
-          this.myPlayer.playerBehavior === PlayerBehavior.SITTING &&
-          Phaser.Math.Distance.Between(this.myPlayer.x, this.myPlayer.y, chair.x, chair.y) <= 24
-        if (chair.playerMask) {
-          if (localSittingHere) this.myPlayer.setMask(chair.playerMask)
-          else if (this.myPlayer.mask === chair.playerMask) this.myPlayer.clearMask(false)
-          this.otherPlayerMap.forEach((player) => {
-            const animation = player.anims.currentAnim?.key ?? ''
-            const sittingHere = animation.includes('_sit_') && Phaser.Math.Distance.Between(player.x, player.y, chair.x, chair.y) <= 24
-            if (sittingHere) player.setMask(chair.playerMask!)
-            else if (player.mask === chair.playerMask) player.clearMask(false)
-          })
-        }
+      const closestSeatFor = (x: number, y: number, maxDistance: number) => {
+        let closest: Chair | undefined
+        let distance = maxDistance
+        this.seatItems.forEach((chair) => {
+          if (!chair.playerMask) return
+          const candidate = Phaser.Math.Distance.Between(x, y, chair.x, chair.y)
+          // Strictly closer wins; stable seatItems order resolves exact ties.
+          if (candidate < distance) { closest = chair; distance = candidate }
+        })
+        return closest
+      }
+      const localSeat = this.myPlayer.playerBehavior === PlayerBehavior.SITTING
+        ? closestSeatFor(this.myPlayer.x, this.myPlayer.y, 24)
+        : undefined
+      if (localSeat?.playerMask) this.myPlayer.setMask(localSeat.playerMask)
+      else if (this.myPlayer.mask) this.myPlayer.clearMask(false)
+      this.otherPlayerMap.forEach((player) => {
+        const animation = player.anims.currentAnim?.key ?? ''
+        const remoteSeat = animation.includes('_sit_') ? closestSeatFor(player.x, player.y, 24) : undefined
+        if (remoteSeat?.playerMask) player.setMask(remoteSeat.playerMask)
+        else if (player.mask) player.clearMask(false)
       })
       if (this.myPlayer.playerBehavior === PlayerBehavior.IDLE && !preserveReservedSeat) {
         let nearestSeat: Chair | undefined
@@ -1554,7 +1580,7 @@ export default class Game extends Phaser.Scene {
         const remoteMeetingRoom = this.meetingRoomAtPosition(otherPlayer.x, otherPlayer.y)
         const sameMeeting = Boolean(localMeetingRoom && remoteMeetingRoom?.id === localMeetingRoom.id)
         const eitherInsideMeeting = Boolean(localMeetingArea || remoteMeetingRoom)
-        const callAllowed = sameMeeting || (!eitherInsideMeeting && distance <= 300)
+        const callAllowed = sameMeeting || (!eitherInsideMeeting && distance <= 340)
         otherPlayer.makeCall(this.myPlayer, this.network.webRTC!, callAllowed)
         const localRoom = this.isolatedRoomAt(this.myPlayer.x, this.myPlayer.y)
         const remoteRoom = this.isolatedRoomAt(otherPlayer.x, otherPlayer.y)
@@ -1921,3 +1947,4 @@ export default class Game extends Phaser.Scene {
     })
   }
 }
+
